@@ -95,9 +95,14 @@ export default function YouTubePage() {
     if (perfData) return;
     setPerfLoading(true);
     try {
-      const d = await (await fetch("/api/youtube/performance", { cache: "no-store" })).json();
-      setPerfData(d);
-    } catch { /* empty */ }
+      const data = await (await fetch("/api/youtube/performance", { cache: "no-store" })).json();
+      setPerfData(Array.isArray(data?.videos) ? {
+        videos: data.videos,
+        totalVideos: Number(data.totalVideos) || 0,
+        avgViews: Number(data.avgViews) || 0,
+        avgEngagement: Number(data.avgEngagement) || 0,
+      } : { videos: [], totalVideos: 0, avgViews: 0, avgEngagement: 0 });
+    } catch { setPerfData({ videos: [], totalVideos: 0, avgViews: 0, avgEngagement: 0 }); }
     setPerfLoading(false);
   }, [perfData]);
 
@@ -117,14 +122,18 @@ export default function YouTubePage() {
 
   const fetchIdeas = useCallback(async () => {
     try {
-      const all: Idea[] = await (await fetch("/api/youtube/ideas", { cache: "no-store" })).json();
+      const data = await (await fetch("/api/youtube/ideas", { cache: "no-store" })).json();
+      const all: Idea[] = Array.isArray(data) ? data : [];
       setIdeas(all.filter(i => !i.status || i.status === "pending"));
       setRejectedIdeas(all.filter(i => i.status === "rejected"));
-    } catch { /* empty */ }
+    } catch { setIdeas([]); setRejectedIdeas([]); }
   }, []);
 
   const fetchScripts = useCallback(async () => {
-    try { setScripts(await (await fetch("/api/youtube/scripts", { cache: "no-store" })).json()); } catch { /* empty */ }
+    try {
+      const data = await (await fetch("/api/youtube/scripts", { cache: "no-store" })).json();
+      setScripts(Array.isArray(data) ? data : []);
+    } catch { setScripts([]); }
   }, []);
 
   useEffect(() => { fetchIdeas(); fetchScripts(); }, [fetchIdeas, fetchScripts]);

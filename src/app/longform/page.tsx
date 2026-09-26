@@ -54,7 +54,11 @@ export default function LongFormPage() {
   const rejectRef = React.useRef<HTMLTextAreaElement>(null);
 
   const fetchScripts = useCallback(async () => {
-    try { setScripts(await (await fetch("/api/longform", { cache: "no-store" })).json()); } catch { /* empty */ }
+    try {
+      const res = await fetch("/api/longform", { cache: "no-store" });
+      const data = await res.json();
+      setScripts(Array.isArray(data) ? data : []);
+    } catch { setScripts([]); }
   }, []);
 
   useEffect(() => { fetchScripts(); }, [fetchScripts]);

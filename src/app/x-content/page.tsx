@@ -147,8 +147,10 @@ function TrendRadarSection() {
 
 export async function fetchDrafts() {
   const res = await fetch("/api/x-content", { cache: "no-store" });
-  if (!res.ok) throw new Error(`${res.status}`);
-  return await res.json();
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error || `${res.status}`);
+  if (!Array.isArray(data)) throw new Error("Invalid drafts response");
+  return data as Draft[];
 }
 
 const TIME_SLOTS = [

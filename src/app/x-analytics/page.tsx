@@ -46,9 +46,14 @@ export default function XAnalyticsPage() {
 
   useEffect(() => {
     fetch("/api/x-analytics")
-      .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then((r) => r.json().then((d) => ({ ok: r.ok, data: d })))
+      .then(({ ok, data }) => {
+        setData(ok && Array.isArray(data?.tweets) && Array.isArray(data?.heatmap)
+          ? data
+          : { tweets: [], heatmap: [] });
+        setLoading(false);
+      })
+      .catch(() => { setData({ tweets: [], heatmap: [] }); setLoading(false); });
   }, []);
 
   const { tweets, heatmap } = data;
