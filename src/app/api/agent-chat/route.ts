@@ -1,110 +1,90 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { isMissionProfile, normalizeHandoff, type MissionProfile } from "@/lib/mission-profiles";
 
 interface AgentChatRequest {
   agentId: string;
   message: string;
-  history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  history?: Array<{ role: "user" | "assistant"; content: string }>;
 }
 
 interface AgentChatResponse {
   reply: string;
   agentId: string;
+  requestId?: string;
+  status?: string;
 }
 
-const AGENT_PROMPTS: Record<string, string> = {
-  glowryia: "Você é Glowryia, a orquestradora e líder do ecossistema. Coordene especialistas, consolide decisões e encaminhe mudanças pela operação controlada.",
-  max: "Você é Max, assessor executivo. Produza síntese, prioridades, riscos e próximos passos claros para a liderança.",
-  lia: "Você é Lia, especialista em levantamento de requisitos e mapeamento de processos. Transforme reuniões e transcrições em requisitos, fluxos, regras e critérios de aceite.",
-  nova: "Você é Nova, especialista em YouTube e vídeo. Desenvolva estratégia, pesquisa, hooks, roteiros, títulos, thumbnails e SEO.",
-  atlas: "Você é Atlas, dono do ciclo completo de tráfego pago e growth: briefing, oferta, público, criativos, mídia, tracking, QA, campanha, métricas e otimização.",
-  pulse: "Você é Pulse, especialista em mensuração, tracking e atribuição. Defina eventos, UTMs, conversões, indicadores e critérios de decisão.",
-  iris: "Você é Íris, especialista em propostas comerciais. Estruture diagnóstico, escopo, entregáveis, premissas, investimento e próximos passos sem inventar preços ou prazos.",
-  lex: "Você é Lex, especialista em preparação de contratos. Derive uma minuta de proposta aprovada, identifique divergências e encaminhe pontos jurídicos para revisão humana.",
-};
+const CHAT_WAIT_MS = Number(process.env.HERMES_CHAT_WAIT_MS || 25000);
+const CHAT_POLL_MS = 500;
 
-export async function POST(request: NextRequest): Promise<NextResponse<AgentChatResponse | { error: string }>> {
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse<AgentChatResponse | { error: string }>> {
   try {
     const body: AgentChatRequest = await request.json();
     const { agentId, message, history = [] } = body;
 
-    // Validate inputs
-    if (!agentId || !message) {
-      return NextResponse.json(
-        { error: 'Missing agentId or message' },
-        { status: 400 }
-      );
+    if (!agentId || !message?.trim()) {
+      return NextResponse.json({ error: "Missing agentId or message" }, { status: 400 });
+    }
+    if (!isMissionProfile(agentId)) {
+      return NextResponse.json({ error: `Unknown Hermes Profile: ${agentId}` }, { status: 400 });
     }
 
-    if (!AGENT_PROMPTS[agentId]) {
-      return NextResponse.json(
-        { error: `Unknown agent: ${agentId}` },
-        { status: 400 }
-      );
-    }
-
-    const systemPrompt = AGENT_PROMPTS[agentId];
-    const apiKey = process.env.OPENROUTER_API_KEY;
-
-    if (!apiKey) {
-      console.error('OPENROUTER_API_KEY not configured');
-      return NextResponse.json(
-        { error: 'API configuration error' },
-        { status: 500 }
-      );
-    }
-
-    // Build messages array: system prompt + history + current message
-    const messages = [
-      ...history,
-      { role: 'user' as const, content: message },
-    ];
-
-    // Call OpenRouter API
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://your-app.vercel.app',
+    const targetProfile: MissionProfile = agentId;
+    const safeHistory = history.slice(-10).map((item) => ({
+      role: item.role,
+      content: String(item.content || "").slice(0, 4000),
+    }));
+    const row = await prisma.agentRequest.create({
+      data: {
+        origin: "web",
+        kind: "chat",
+        title: `Chat · ${targetProfile}: ${message.trim()}`.slice(0, 200),
+        prompt: message.trim().slice(0, 8000),
+        targetProfile,
+        handoff: normalizeHandoff({ context: { history: safeHistory } }) as Prisma.InputJsonObject,
+        sideEffecting: false,
+        status: "queued",
       },
-      body: JSON.stringify({
-        model: 'anthropic/claude-haiku-4-5',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages,
-        ],
-        max_tokens: 800,
-      }),
     });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('OpenRouter API error:', error);
-      return NextResponse.json(
-        { error: 'Failed to get response from AI model' },
-        { status: 500 }
-      );
-    }
-
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || '';
-
-    if (!reply) {
-      return NextResponse.json(
-        { error: 'No response from AI model' },
-        { status: 500 }
-      );
+    const deadline = Date.now() + CHAT_WAIT_MS;
+    while (Date.now() < deadline) {
+      await sleep(CHAT_POLL_MS);
+      const current = await prisma.agentRequest.findUnique({ where: { id: row.id } });
+      if (current?.status === "done") {
+        return NextResponse.json({
+          reply: current.result || "O Profile concluiu sem retornar conteúdo.",
+          agentId: targetProfile,
+          requestId: row.id,
+          status: current.status,
+        });
+      }
+      if (current?.status === "failed") {
+        return NextResponse.json({
+          reply: `O Profile não conseguiu concluir: ${current.error || "erro não informado"}`,
+          agentId: targetProfile,
+          requestId: row.id,
+          status: current.status,
+        });
+      }
     }
 
     return NextResponse.json({
-      reply,
-      agentId,
+      reply: `Solicitação enviada ao Profile ${targetProfile}. O bridge ainda está processando; acompanhe o request ${row.id} no Mission Control.`,
+      agentId: targetProfile,
+      requestId: row.id,
+      status: "queued",
     });
   } catch (error) {
-    console.error('Agent chat error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Agent chat error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
