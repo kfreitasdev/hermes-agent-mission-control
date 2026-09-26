@@ -41,7 +41,11 @@ const BRIEF_PROMPT =
   '{"label":"Recently shipped","items":["..."]},{"label":"Next actions","items":["..."]}]}. ' +
   "Keep every item short, concrete, and specific. Omit a section if it has nothing.";
 const PROFILE_IDS = new Set(["glowryia", "max", "nova", "atlas", "lia", "iris", "lex", "pulse"]);
-let lastBriefDate = null;
+// Do not spend model credits just because the bridge restarted after the
+// configured hour. A startup after the hour waits for the next day; a manual
+// `briefing.generate` request remains available when an immediate brief is wanted.
+const startupDate = new Date();
+let lastBriefDate = startupDate.getHours() >= BRIEF_HOUR ? startupDate.toISOString().slice(0, 10) : null;
 
 const DB_URL = process.env.DATABASE_URL || "";
 if (!DB_URL) { console.error("DATABASE_URL is required (use the direct postgres:// URL, not a prisma:// Accelerate URL)"); process.exit(1); }

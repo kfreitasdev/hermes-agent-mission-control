@@ -1,0 +1,20 @@
+[Unit]
+Description=Glowryia Agent Mission Hermes Bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/tools_hub/hermes-agent-mission-control/hermes-bridge
+EnvironmentFile=/root/tools_hub/hermes-agent-mission-control/.env
+Environment=HOME=/root
+Environment=HERMES_BIN=/root/.hermes/installs/76f6e7e5145b5f39/environments/55ce9dd2896b4413af278e898525dabe/venv/bin/hermes
+Environment=HERMES_WIKI=/root/.hermes/wiki
+ExecStart=/root/.hermes/tools/node-26.7.0-linux-x64/bin/node /root/tools_hub/hermes-agent-mission-control/hermes-bridge/bridge.mjs
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target
