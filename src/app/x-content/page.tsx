@@ -75,11 +75,11 @@ function TrendRadarSection() {
       {/* Header row */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="text-[12px] text-[var(--text-3)]">
-          {trendsData?.lastUpdated ? `Updated ${formatTimeAgo(Math.floor((Date.now() - new Date(trendsData.lastUpdated).getTime()) / 60000))}` : "No data yet"}
+          {trendsData?.lastUpdated ? `Atualizado ${formatTimeAgo(Math.floor((Date.now() - new Date(trendsData.lastUpdated).getTime()) / 60000))}` : "Nenhum dado ainda"}
           {" · "}
-          <span className="num text-[var(--text-2)]">{filtered.length} signal{filtered.length !== 1 ? "s" : ""}</span>
+          <span className="num text-[var(--text-2)]">{filtered.length} {filtered.length === 1 ? "sinal" : "sinais"}</span>
         </div>
-        <button onClick={load} className="btn-ghost px-3 py-1.5 text-[12px] font-medium">Refresh</button>
+        <button onClick={load} className="btn-ghost px-3 py-1.5 text-[12px] font-medium">Atualizar</button>
       </div>
 
       {/* Filter pills */}
@@ -89,14 +89,14 @@ function TrendRadarSection() {
             className={`${CHIP} ${filter === f
               ? "text-[var(--text)] bg-[var(--surface-3)] border border-[var(--line-strong)]"
               : "text-[var(--text-3)] hover:text-[var(--text-2)] hover:bg-[var(--surface-2)] border border-transparent"}`}>
-            {f === "all" ? "All" : f === "ai" ? "AI" : f === "crypto" ? "Crypto" : "Creator"}
+            {f === "all" ? "Todos" : f === "ai" ? "IA" : f === "crypto" ? "Cripto" : "Criadores"}
           </button>
         ))}
       </div>
 
       {/* Trend cards */}
       {filtered.length === 0 ? (
-        <EmptyState title="No fresh signals right now" hint="Radar updates every 15 min." />
+        <EmptyState title="Nenhum sinal novo agora" hint="O radar atualiza a cada 15 minutos." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map(trend => {
@@ -118,7 +118,7 @@ function TrendRadarSection() {
                   </div>
                   {trend.sageAngle && (
                     <div className="rounded-[var(--r-sm)] border border-[var(--line)] bg-[var(--surface-2)] p-2.5 space-y-1">
-                      <div className="eyebrow" style={{ color: "var(--up)" }}>Draft angle</div>
+                      <div className="eyebrow" style={{ color: "var(--up)" }}>Ângulo do rascunho</div>
                       <div className="text-[11px] text-[var(--text-2)] italic">{trend.sageAngle}</div>
                     </div>
                   )}
@@ -126,13 +126,13 @@ function TrendRadarSection() {
                     {trend.url && (
                       <a href={trend.url} target="_blank" rel="noopener noreferrer"
                         className="btn-ghost flex-1 justify-center py-2 text-[12px] font-medium text-center">
-                        View Tweet
+                        Ver publicação
                       </a>
                     )}
                     <button onClick={() => handleSnipe(trend)}
                       className={`${CHIP} flex-1 justify-center py-2 text-[12px] font-semibold`}
                       style={toneStyle(snipedId === trend.id ? "var(--up)" : "var(--accent)")}>
-                      {snipedId === trend.id ? "Sniped" : "Snipe"}
+                      {snipedId === trend.id ? "Capturado" : "Capturar"}
                     </button>
                   </div>
                 </div>
@@ -162,8 +162,8 @@ const TIME_SLOTS = [
 ];
 
 const REJECT_REASONS = [
-  "Too AI", "Too Vague", "No Value",
-  "Inaccurate", "Not My Voice", "Boring"
+  "Muito IA", "Muito vago", "Sem valor",
+  "Impreciso", "Não parece comigo", "Entediante"
 ];
 
 interface WeekDay {
@@ -232,7 +232,7 @@ interface DraftCardProps {
 function getWeekDays(): WeekDay[] {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   const days: WeekDay[] = [];
   for (let i = -2; i <= 4; i++) {
     const d = new Date(now);
@@ -317,8 +317,8 @@ const DraftCard = memo(function DraftCard({
             />
             <div className="flex gap-1.5">
               <button onClick={() => { if (editTextRef.current) onEditSubmit(draft.id, editTextRef.current.value); }}
-                className={CHIP} style={toneStyle("var(--up)")}>Save</button>
-              <button onClick={() => onSetEditing(null)} className={GHOST_CHIP}>Cancel</button>
+                className={CHIP} style={toneStyle("var(--up)")}>Salvar</button>
+              <button onClick={() => onSetEditing(null)} className={GHOST_CHIP}>Cancelar</button>
             </div>
           </div>
         ) : (
@@ -345,7 +345,7 @@ const DraftCard = memo(function DraftCard({
               {draft.quoteText ? (
                 <p className="text-[12px] text-[var(--text-2)] leading-relaxed whitespace-pre-wrap line-clamp-5">{draft.quoteText}</p>
               ) : (
-                <p className="text-[11px] text-[var(--text-3)] italic">Tweet text not loaded</p>
+                <p className="text-[11px] text-[var(--text-3)] italic">Texto da publicação não carregado</p>
               )}
               <p className="text-[10px] text-[var(--text-4)] mt-2 truncate">{draft.quoteUrl}</p>
             </a>
@@ -359,9 +359,9 @@ const DraftCard = memo(function DraftCard({
               onClick={() => onLightbox(draft.visualUrl || null)} />
             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-1)]/90 text-[var(--text-2)] hover:text-[var(--text)]"
-                onClick={() => { navigator.clipboard.writeText(draft.visualUrl || ""); }}>Copy HD</button>
+                onClick={() => { navigator.clipboard.writeText(draft.visualUrl || ""); }}>Copiar HD</button>
               <button className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-1)]/90 text-[var(--text-2)] hover:text-[var(--text)]"
-                onClick={async () => { await onRemoveVisual(draft.id); await onGenerateVisual(draft.id); }}>Regenerate</button>
+                onClick={async () => { await onRemoveVisual(draft.id); await onGenerateVisual(draft.id); }}>Regenerar</button>
               <button className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-1)]/90 text-[var(--down)] hover:brightness-110"
                 onClick={() => onRemoveVisual(draft.id)}>Remove</button>
             </div>
@@ -379,7 +379,7 @@ const DraftCard = memo(function DraftCard({
           </div>
         )}
 
-        {/* Schedule info */}
+        {/* Agendar info */}
         {draft.scheduledDate && (
           <div className="num text-[12px] flex justify-between items-center" style={{ color: "var(--accent)" }}>
             <span>{draft.scheduledDate} {draft.scheduledTime || ""}</span>
@@ -392,15 +392,15 @@ const DraftCard = memo(function DraftCard({
         {/* Meta */}
         <div className="flex items-center justify-between num text-[11px] text-[var(--text-4)]">
           <span>{draft.model} · {new Date(draft.createdAt).toLocaleDateString()} {new Date(draft.createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
-          {draft.postedUrl && <a href={draft.postedUrl} target="_blank" rel="noreferrer" className="text-[var(--accent)] hover:brightness-110">View on X ↗</a>}
+          {draft.postedUrl && <a href={draft.postedUrl} target="_blank" rel="noreferrer" className="text-[var(--accent)] hover:brightness-110">Ver no X ↗</a>}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-1.5 px-5 py-3 border-t border-[var(--line)]">
-          <button onClick={() => { const copyText = draft.quoteUrl ? `${draft.text}\n\n${draft.quoteUrl}` : (draft.text || ""); navigator.clipboard.writeText(copyText); const btn = document.activeElement as HTMLButtonElement; if (btn) { btn.textContent = "Copied"; setTimeout(() => { btn.textContent = "Copy"; }, 1500); } }} className={GHOST_CHIP}>Copy</button>
+          <button onClick={() => { const copyText = draft.quoteUrl ? `${draft.text}\n\n${draft.quoteUrl}` : (draft.text || ""); navigator.clipboard.writeText(copyText); const btn = document.activeElement as HTMLButtonElement; if (btn) { btn.textContent = "Copied"; setTimeout(() => { btn.textContent = "Copiar"; }, 1500); } }} className={GHOST_CHIP}>Copiar</button>
           {!isEditing && draft.status !== "posted" && (
-            <button onClick={() => onSetEditing(draft.id)} className={GHOST_CHIP}>Edit</button>
+            <button onClick={() => onSetEditing(draft.id)} className={GHOST_CHIP}>Editar</button>
           )}
 
           {/* Tweak */}
@@ -413,7 +413,7 @@ const DraftCard = memo(function DraftCard({
                   onKeyDown={(e) => { if (e.key === "Enter" && tweakComment.trim()) onTweak(draft.id, tweakComment); }}
                 />
                 <button onClick={() => { if (tweakComment.trim()) onTweak(draft.id, tweakComment); }}
-                  className={CHIP} style={toneStyle("var(--accent)")}>Send</button>
+                  className={CHIP} style={toneStyle("var(--accent)")}>Enviar</button>
                 <button onClick={() => { onSetTweaking(null); onSetTweakComment(""); }}
                   className={GHOST_CHIP}>✕</button>
               </div>
@@ -425,12 +425,12 @@ const DraftCard = memo(function DraftCard({
           {/* Visual buttons */}
           {!draft.visualUrl && draft.status !== "posted" && (
             <>
-              <button onClick={() => onAttachVisual(draft.id)} className={GHOST_CHIP}>Attach Image</button>
-              <button onClick={() => onGenerateVisual(draft.id)} className={CHIP} style={toneStyle("var(--accent)")}>Generate Visual</button>
+              <button onClick={() => onAttachVisual(draft.id)} className={GHOST_CHIP}>Anexar imagem</button>
+              <button onClick={() => onGenerateVisual(draft.id)} className={CHIP} style={toneStyle("var(--accent)")}>Gerar visual</button>
             </>
           )}
 
-          {/* Reject from approved/scheduled */}
+          {/* Rejeitar from approved/scheduled */}
           {(draft.status === "approved" || draft.status === "scheduled") && (
             isShowingRejectPicker ? (
               <div className="flex flex-wrap gap-1 w-full mt-1">
@@ -445,19 +445,19 @@ const DraftCard = memo(function DraftCard({
                 }}>
                   <input name="customReason" placeholder="Custom reason..." autoFocus
                     className="flex-1 bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-[var(--r-sm)] px-2.5 py-1 text-[10px] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--down)]" />
-                  <button type="submit" className="text-[10px] px-2.5 py-1 rounded-[var(--r-sm)]" style={toneStyle("var(--down)")}>Reject</button>
+                  <button type="submit" className="text-[10px] px-2.5 py-1 rounded-[var(--r-sm)]" style={toneStyle("var(--down)")}>Rejeitar</button>
                 </form>
-                <button onClick={() => onSetRejectPicker(null)} className="text-[10px] text-[var(--text-3)] px-2 py-0.5">Cancel</button>
+                <button onClick={() => onSetRejectPicker(null)} className="text-[10px] text-[var(--text-3)] px-2 py-0.5">Cancelar</button>
               </div>
             ) : (
-              <button onClick={() => onSetRejectPicker(draft.id)} className={CHIP} style={toneStyle("var(--down)")}>Reject</button>
+              <button onClick={() => onSetRejectPicker(draft.id)} className={CHIP} style={toneStyle("var(--down)")}>Rejeitar</button>
             )
           )}
 
-          {/* Approve / Reject */}
+          {/* Aprovar / Rejeitar */}
           {draft.status === "pending" && (
             <>
-              <button onClick={() => onFeedback(draft.id, "approved")} className={CHIP} style={toneStyle("var(--up)")}>Approve</button>
+              <button onClick={() => onFeedback(draft.id, "approved")} className={CHIP} style={toneStyle("var(--up)")}>Aprovar</button>
               {isShowingRejectPicker ? (
                 <div className="flex flex-wrap gap-1 w-full mt-1">
                   {REJECT_REASONS.map(reason => (
@@ -471,17 +471,17 @@ const DraftCard = memo(function DraftCard({
                   }}>
                     <input name="customReason" placeholder="Custom reason..." autoFocus
                       className="flex-1 bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-[var(--r-sm)] px-2.5 py-1 text-[10px] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--down)]" />
-                    <button type="submit" className="text-[10px] px-2.5 py-1 rounded-[var(--r-sm)]" style={toneStyle("var(--down)")}>Reject</button>
+                    <button type="submit" className="text-[10px] px-2.5 py-1 rounded-[var(--r-sm)]" style={toneStyle("var(--down)")}>Rejeitar</button>
                   </form>
-                  <button onClick={() => onSetRejectPicker(null)} className="text-[10px] text-[var(--text-3)] px-2 py-0.5">Cancel</button>
+                  <button onClick={() => onSetRejectPicker(null)} className="text-[10px] text-[var(--text-3)] px-2 py-0.5">Cancelar</button>
                 </div>
               ) : (
-                <button onClick={() => onSetRejectPicker(draft.id)} className={CHIP} style={toneStyle("var(--down)")}>Reject</button>
+                <button onClick={() => onSetRejectPicker(draft.id)} className={CHIP} style={toneStyle("var(--down)")}>Rejeitar</button>
               )}
             </>
           )}
 
-          {/* Schedule */}
+          {/* Agendar */}
           {draft.status === "approved" && !draft.scheduledDate && (
             isShowingSchedulePicker ? (
               <div className="flex flex-wrap gap-1 w-full mt-1">
@@ -492,10 +492,10 @@ const DraftCard = memo(function DraftCard({
                     {day.dayName} {day.label}
                   </button>
                 ))}
-                <button onClick={() => onSetSchedulePicker(null)} className="text-[10px] text-[var(--text-3)] px-2 py-0.5">Cancel</button>
+                <button onClick={() => onSetSchedulePicker(null)} className="text-[10px] text-[var(--text-3)] px-2 py-0.5">Cancelar</button>
               </div>
             ) : (
-              <button onClick={() => onSetSchedulePicker(draft.id)} className={CHIP} style={toneStyle("var(--accent)")}>Schedule</button>
+              <button onClick={() => onSetSchedulePicker(draft.id)} className={CHIP} style={toneStyle("var(--accent)")}>Agendar</button>
             )
           )}
 
@@ -507,18 +507,18 @@ const DraftCard = memo(function DraftCard({
                   placeholder="Tweet URL (optional)"
                   className="flex-1 bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-[var(--r-sm)] px-2.5 py-1.5 text-[12px] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]" />
                 <button onClick={() => onMarkPosted(draft.id, postedUrlValue || undefined)}
-                  className={CHIP} style={toneStyle("var(--accent)")}>Done</button>
+                  className={CHIP} style={toneStyle("var(--accent)")}>Concluído</button>
                 <button onClick={() => { onSetPostedUrlDraft(null); onSetPostedUrlValue(""); }}
                   className="text-[11px] text-[var(--text-3)] px-1">✕</button>
               </div>
             ) : (
-              <button onClick={() => onSetPostedUrlDraft(draft.id)} className={CHIP} style={toneStyle("var(--accent)")}>Mark Posted</button>
+              <button onClick={() => onSetPostedUrlDraft(draft.id)} className={CHIP} style={toneStyle("var(--accent)")}>Marcar como publicado</button>
             )
           )}
 
-          {/* Restore */}
+          {/* Restaurar */}
           {draft.status === "rejected" && (
-            <button onClick={() => onFeedback(draft.id, "pending")} className={CHIP} style={toneStyle("var(--warn)")}>Restore</button>
+            <button onClick={() => onFeedback(draft.id, "pending")} className={CHIP} style={toneStyle("var(--warn)")}>Restaurar</button>
           )}
       </div>
 
@@ -640,7 +640,7 @@ export default function XContentPage() {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       console.error("[feedback] POST failed", res.status, err);
-      alert(`Save failed (${res.status}): ${err?.error || "unknown error"}. Try refreshing the page.`);
+      alert(`Falha ao salvar (${res.status}): ${err?.error || "unknown error"}. Try refreshing the page.`);
       return;
     }
     loadDrafts();
@@ -724,7 +724,7 @@ export default function XContentPage() {
         body: JSON.stringify({ prompt: contentRequest.trim() }),
       });
       setContentRequest("");
-    } catch (err) { console.error("Request failed", err); }
+    } catch (err) { console.error("Solicitar failed", err); }
     setRequestLoading(false);
   }, [contentRequest, requestLoading]);
 
@@ -742,11 +742,11 @@ export default function XContentPage() {
     const is401 = fetchError === "401";
     return (
       <EmptyState
-        title={is401 ? "Session expired" : "Failed to load drafts"}
-        hint={is401 ? "Your login session expired. Please sign back in." : fetchError}
+        title={is401 ? "Sessão expirada" : "Falha ao carregar rascunhos"}
+        hint={is401 ? "Sua sessão expirou. Entre novamente." : fetchError}
         action={is401
-          ? <a href="/login" className="btn-primary px-4 py-2 text-[13px]">Sign in</a>
-          : <button onClick={loadDrafts} className="btn-ghost px-4 py-2 text-[13px]">Retry</button>}
+          ? <a href="/login" className="btn-primary px-4 py-2 text-[13px]">Entrar</a>
+          : <button onClick={loadDrafts} className="btn-ghost px-4 py-2 text-[13px]">Tentar novamente</button>}
       />
     );
   }
@@ -787,14 +787,14 @@ export default function XContentPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-5 overflow-x-hidden">
-      {/* Content Request Bar */}
+      {/* Content Solicitar Bar */}
       <div className="flex gap-2">
         <div className="flex-1 relative">
           <input
             value={contentRequest}
             onChange={(e) => setContentRequest(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleContentRequest(); }}
-            placeholder="Request content... e.g. 'quote retweet my last tweet about bookmarks with an update'"
+            placeholder="Solicitar content... e.g. 'quote retweet my last tweet about bookmarks with an update'"
             className="w-full bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--r-md)] px-4 py-3 text-[13px] text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
           />
           <span className="absolute right-3 top-3.5 text-[10px] text-[var(--text-3)]">Sage</span>
@@ -806,7 +806,7 @@ export default function XContentPage() {
             !contentRequest.trim() || requestLoading ? "opacity-40 cursor-not-allowed" : ""
           } ${contentRequest.trim() && !requestLoading ? "btn-primary" : "btn-ghost"}`}
         >
-          {requestLoading ? "Sending..." : "Request"}
+          {requestLoading ? "Enviando..." : "Solicitar"}
         </button>
       </div>
 
@@ -836,15 +836,15 @@ export default function XContentPage() {
             <button onClick={() => setShowRejected(!showRejected)}
               className={`${CHIP} px-2.5 py-1.5 text-[12px]`}
               style={showRejected ? toneStyle("var(--down)") : { color: "var(--text-3)", background: "transparent", border: "1px solid transparent" }}>
-              Rejected
+              Rejeitados
               <span className="num text-[10px] px-1.5 py-0.5 rounded-full text-[var(--text-3)] bg-[var(--surface-2)]">{rejected.length}</span>
             </button>
           </div>
           <select value={contentFilter} onChange={(e) => setContentFilter(e.target.value as typeof contentFilter)}
             className="shrink-0 ml-auto bg-[var(--surface-2)] text-[var(--text-2)] px-2.5 py-1.5 rounded-[var(--r-sm)] text-[13px] border border-[var(--line)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]">
-            <option value="all">All</option>
-            <option value="tweet">Tweets</option>
-            <option value="article">Articles</option>
+            <option value="all">Todos</option>
+            <option value="tweet">Publicações</option>
+            <option value="article">Artigos</option>
           </select>
         </div>
       </div>
@@ -853,15 +853,15 @@ export default function XContentPage() {
       {activeTab === "visuals" && (() => {
         const articleVisuals = [
           // ── 40 hours article ──
-          { id: "40h-hero", label: "40hrs — Hero / Thumbnail", desc: "Article header — use this when sharing the link on X", url: "/article-visuals/1d706cf0-e41d-4e6d-9cc5-14e4301b1e2b-hero.html", thumb: null },
+          { id: "40h-hero", label: "40hrs — Hero / Miniatura", desc: "Cabeçalho do artigo — use ao compartilhar o link no X", url: "/article-visuals/1d706cf0-e41d-4e6d-9cc5-14e4301b1e2b-hero.html", thumb: null },
           { id: "40h-comparison", label: "40hrs — Prompting vs Delegating", desc: "Core contrast card — place after the intro section", url: "/article-visuals/1d706cf0-e41d-4e6d-9cc5-14e4301b1e2b-comparison.html", thumb: null },
           { id: "40h-steps", label: "40hrs — 3-Step Framework", desc: "Step-by-step delegation guide — place before the CTA", url: "/article-visuals/1d706cf0-e41d-4e6d-9cc5-14e4301b1e2b-steps.html", thumb: null },
           // ── Google Workspace article ──
-          { id: "hero", label: "GWS — Hero / Thumbnail", desc: "Article header — use this when sharing the link on X", url: "/article-visuals/hero.html", thumb: null },
-          { id: "skills-grid", label: "GWS — Skills Overview Grid", desc: "All 50 skills organized by app — place after the intro", url: "/article-visuals/skills-grid.html", thumb: null },
+          { id: "hero", label: "GWS — Hero / Miniatura", desc: "Cabeçalho do artigo — use ao compartilhar o link no X", url: "/article-visuals/hero.html", thumb: null },
+          { id: "skills-grid", label: "GWS — Grade geral de habilidades", desc: "As 50 habilidades organizadas por aplicativo — coloque após a introdução", url: "/article-visuals/skills-grid.html", thumb: null },
           { id: "setup-flow", label: "GWS — Setup Flow", desc: "4-step install guide — place in the setup section", url: "/article-visuals/setup-flow.html", thumb: null },
           { id: "before-after", label: "GWS — Before / After", desc: "Emotional payoff card — place before the conclusion", url: "/article-visuals/before-after.html", thumb: null },
-          { id: "cc-hero", label: "Claude Code — Hero / Thumbnail", desc: "Article header — use when sharing the link on X", url: "/article-visuals/claude-code-hero.html", thumb: null },
+          { id: "cc-hero", label: "Claude Code — Hero / Miniatura", desc: "Cabeçalho do artigo — use ao compartilhar o link no X", url: "/article-visuals/claude-code-hero.html", thumb: null },
           { id: "cc-skills", label: "Claude Code — Agent Skills", desc: "Screenshot 1 — SKILL.md setup", url: "/draft-visuals/claude-code-skills-skill-md.png", thumb: "/draft-visuals/claude-code-skills-skill-md.png" },
           { id: "cc-hook", label: "Claude Code — SessionStart Hook", desc: "Screenshot 2 — settings.json hook config", url: "/draft-visuals/claude-code-session-hook.png", thumb: "/draft-visuals/claude-code-session-hook.png" },
           { id: "cc-aws", label: "Claude Code — AWS CloudFormation", desc: "Screenshot 3 — retroactive IaC import session", url: "/draft-visuals/claude-code-aws-cloudformation.png", thumb: "/draft-visuals/claude-code-aws-cloudformation.png" },
@@ -875,7 +875,7 @@ export default function XContentPage() {
         return (
           <div className="space-y-8">
             <div>
-              <span className="eyebrow">Article Visuals</span>
+              <span className="eyebrow">Visuais dos artigos</span>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {articleVisuals.map(v => (
                   <div key={v.id} className="panel overflow-hidden">
@@ -884,7 +884,7 @@ export default function XContentPage() {
                       <a href={v.url} target="_blank" rel="noreferrer"
                         className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/40 transition group">
                         <span className="opacity-0 group-hover:opacity-100 text-[var(--text)] text-[13px] font-medium bg-[var(--surface-3)] px-3 py-1.5 rounded-[var(--r-sm)] transition">
-                          Open full size
+                          Abrir tamanho original
                         </span>
                       </a>
                     </div>
@@ -896,11 +896,11 @@ export default function XContentPage() {
                       <div className="flex gap-2 shrink-0">
                         <a href={v.url} target="_blank" rel="noreferrer"
                           className={`${CHIP} whitespace-nowrap`} style={toneStyle("var(--accent)")}>
-                          Open HD ↗
+                          Abrir HD ↗
                         </a>
                         <button onClick={() => { navigator.clipboard.writeText(window.location.origin + v.url); }}
                           className={GHOST_CHIP}>
-                          Copy URL
+                          Copiar URL
                         </button>
                       </div>
                     </div>
@@ -910,7 +910,7 @@ export default function XContentPage() {
             </div>
             {draftVisuals.length > 0 && (
               <div>
-                <span className="eyebrow">Draft Visuals (PNG)</span>
+                <span className="eyebrow">Visuais do rascunho (PNG)</span>
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mt-4">
                   {draftVisuals.map(v => (
                     <div key={v.id} className="panel overflow-hidden">
@@ -939,18 +939,18 @@ export default function XContentPage() {
         {activeDrafts.map(renderCard)}
         {activeDrafts.length === 0 && (
           <div className="col-span-1 md:col-span-2 xl:col-span-3">
-            <EmptyState title={`No ${activeTab} drafts${contentFilter !== "all" ? ` (${contentFilter}s)` : ""}`} />
+            <EmptyState title={`Nenhum rascunho de ${activeTab}${contentFilter !== "all" ? ` (${contentFilter})` : ""}`} />
           </div>
         )}
       </div>
       )}
 
-      {/* Rejected (collapsible) */}
+      {/* Rejeitados (collapsible) */}
       {showRejected && rejected.length > 0 && (
         <div className="border-t border-[var(--line)] pt-5 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="eyebrow" style={{ color: "var(--down)" }}>Rejected ({rejected.length})</span>
-            <button onClick={() => setShowRejected(false)} className="text-[12px] text-[var(--text-3)] hover:text-[var(--text-2)]">Hide</button>
+            <span className="eyebrow" style={{ color: "var(--down)" }}>Rejeitados ({rejected.length})</span>
+            <button onClick={() => setShowRejected(false)} className="text-[12px] text-[var(--text-3)] hover:text-[var(--text-2)]">Ocultar</button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 opacity-80">{rejected.map(renderCard)}</div>
         </div>
@@ -958,7 +958,7 @@ export default function XContentPage() {
 
       {/* Calendar */}
       <div className="border-t border-[var(--line)] pt-5">
-        <div className="eyebrow mb-3">Schedule · drag drafts here</div>
+        <div className="eyebrow mb-3">Agendar · drag drafts here</div>
         <div className="grid grid-cols-7 gap-2">
           {weekDays.map((day) => (
             <DroppableDay key={day.date} day={day}

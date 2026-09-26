@@ -187,7 +187,7 @@ export default function OutlierFeed() {
     fetch('/api/youtube/outliers')
       .then((r) => r.json())
       .then((d) => setData(d))
-      .catch(() => setData({ videos: [], totalOutliers: 0, nicheCounts: {}, scannedAt: null, date: '', error: 'Fetch failed' }))
+      .catch(() => setData({ videos: [], totalOutliers: 0, nicheCounts: {}, scannedAt: null, date: '', error: 'Falha ao buscar dados' }))
       .finally(() => setLoading(false));
   }, []);
 
@@ -250,7 +250,7 @@ export default function OutlierFeed() {
       {/* Title Patterns */}
       {titlePatterns.length > 0 && (
         <div className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl p-4">
-          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-3">📊 Title Patterns That Are Working</p>
+          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-3">📊 Padrões de título que estão funcionando</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {titlePatterns.map(({ pattern, count, avgScore: avg }) => (
               <div key={pattern.label} className="bg-neutral-800/50 rounded-lg px-3 py-2 flex items-center justify-between gap-2">
@@ -279,7 +279,7 @@ export default function OutlierFeed() {
                 : 'bg-neutral-900/50 border-neutral-800/50 text-neutral-400 hover:border-neutral-700'
             }`}
           >
-            All ({data.totalOutliers})
+            Todos ({data.totalOutliers})
           </button>
           {Object.entries(data.nicheCounts).map(([key, nc]) => (
             <button
@@ -303,10 +303,10 @@ export default function OutlierFeed() {
             onChange={(e) => setSortBy(e.target.value as SortOption)}
             className="text-xs bg-neutral-900/80 border border-neutral-800/50 text-neutral-300 rounded-lg px-3 py-1.5 outline-none focus:border-red-500/50"
           >
-            <option value="outlierScore">Outlier Score</option>
-            <option value="velocity">🔥 Velocity (views/day)</option>
-            <option value="views">Views</option>
-            <option value="recent">Recent</option>
+            <option value="outlierScore">Pontuação de destaque</option>
+            <option value="velocity">🔥 Velocidade (visualizações/dia)</option>
+            <option value="views">Visualizações</option>
+            <option value="recent">Mais recentes</option>
           </select>
 
           <div className="flex items-center gap-1.5">
@@ -334,7 +334,7 @@ export default function OutlierFeed() {
 
       {/* Video grid */}
       {filtered.length === 0 ? (
-        <p className="text-neutral-500 text-center py-16 text-sm">No videos match your filters</p>
+        <p className="text-neutral-500 text-center py-16 text-sm">Nenhum vídeo corresponde aos filtros</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filtered.map((video) => (

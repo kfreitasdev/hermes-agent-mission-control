@@ -95,15 +95,15 @@ export default function XAnalyticsPage() {
 
   const stats = [
     { label: "Tweets Tracked", value: tweets.length.toString() },
-    { label: "Total Views", value: fmt(totalViews) },
+    { label: "Visualizações totais", value: fmt(totalViews) },
     { label: "Avg Eng Rate", value: `${avgEng}%` },
-    { label: "Top Tweet", value: fmt(topViews) + " views" },
+    { label: "Melhor publicação", value: fmt(topViews) + " visualizações" },
   ];
 
   return (
     <div className="space-y-10 pb-8">
       {/* Header */}
-      <SectionHeader label="X Analytics" title="Tweet performance & posting insights" />
+      <SectionHeader label="Análises do X" title="Desempenho das publicações e insights" />
 
       {loading ? (
         <div className="space-y-10">
@@ -130,18 +130,18 @@ export default function XAnalyticsPage() {
             {/* Tweet performance table */}
             <div className="flex-[3] panel overflow-hidden">
               <div className="p-5 border-b border-[var(--line)]">
-                <span className="eyebrow">Tweet Performance</span>
+                <span className="eyebrow">Desempenho das publicações</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-[13px]">
                   <thead>
                     <tr className="text-[10px] text-[var(--text-3)] uppercase tracking-[0.12em] border-b border-[var(--line)]">
-                      <th className="text-left px-5 py-3 font-medium">Tweet</th>
-                      <th className="text-right px-5 py-3 font-medium">Views</th>
-                      <th className="text-right px-5 py-3 font-medium">Likes</th>
-                      <th className="text-right px-5 py-3 font-medium">Bookmarks</th>
-                      <th className="text-right px-5 py-3 font-medium">Eng Rate</th>
-                      <th className="text-right px-5 py-3 font-medium">Date</th>
+                      <th className="text-left px-5 py-3 font-medium">Publicação</th>
+                      <th className="text-right px-5 py-3 font-medium">Visualizações</th>
+                      <th className="text-right px-5 py-3 font-medium">Curtidas</th>
+                      <th className="text-right px-5 py-3 font-medium">Salvamentos</th>
+                      <th className="text-right px-5 py-3 font-medium">Taxa de eng.</th>
+                      <th className="text-right px-5 py-3 font-medium">Data</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -196,7 +196,7 @@ export default function XAnalyticsPage() {
                   </div>
                 ))}
                 {tweets.length === 0 && (
-                  <EmptyState title="No tweet data yet" hint="Performance shows up here once tweets are tracked." />
+                  <EmptyState title="Nenhum dado de publicação ainda" hint="O desempenho aparecerá aqui quando as publicações forem acompanhadas." />
                 )}
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function XAnalyticsPage() {
           <div className="panel overflow-hidden">
             <div className="p-5 border-b border-[var(--line)]">
               <span className="eyebrow">Best Posting Times</span>
-              <p className="text-[12px] text-[var(--text-3)] mt-1.5">Average views by day and hour posted (UTC)</p>
+              <p className="text-[12px] text-[var(--text-3)] mt-1.5">Média de visualizações por dia e hora de publicação (UTC)</p>
             </div>
             <div className="p-5 overflow-x-auto">
               <div className="inline-block min-w-full">

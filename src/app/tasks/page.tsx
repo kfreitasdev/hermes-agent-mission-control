@@ -13,10 +13,10 @@ interface Task {
 }
 
 const columns = [
-  { id: "Not started", label: "To Do" },
-  { id: "Approved", label: "Approved" },
-  { id: "In progress", label: "In Progress" },
-  { id: "Done", label: "Done" },
+  { id: "Not started", label: "A fazer" },
+  { id: "Approved", label: "Aprovadas" },
+  { id: "In progress", label: "Em andamento" },
+  { id: "Done", label: "Concluídas" },
 ];
 
 export default function TasksPage() {
@@ -35,7 +35,7 @@ export default function TasksPage() {
       const data = await res.json();
       setTasks(data.tasks || []);
     } catch (e) {
-      console.error("Failed to fetch tasks", e);
+      console.error("Falha ao buscar tarefas", e);
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export default function TasksPage() {
       setShowAddTask(false);
       fetchTasks();
     } catch (e) {
-      console.error("Failed to add task", e);
+      console.error("Falha ao adicionar tarefa", e);
     }
   }
 
@@ -66,7 +66,7 @@ export default function TasksPage() {
       });
       fetchTasks();
     } catch (e) {
-      console.error("Failed to update task", e);
+      console.error("Falha ao atualizar tarefa", e);
     }
   }
 
@@ -101,10 +101,10 @@ export default function TasksPage() {
       <div className="relative z-10 h-full flex flex-col w-full mx-auto pt-4 pb-16">
         <div className="hq-rise flex justify-between items-end gap-4 mb-10" style={rise(0)}>
           <div>
-            <div className="eyebrow mb-2">Operational tasks</div>
-            <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Tasks</h1>
+            <div className="eyebrow mb-2">Tarefas operacionais</div>
+            <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Tarefas</h1>
           </div>
-          <Button variant="primary" onClick={() => setShowAddTask(true)}>+ Add Task</Button>
+          <Button variant="primary" onClick={() => setShowAddTask(true)}>+ Adicionar tarefa</Button>
         </div>
 
         {showAddTask && (
@@ -113,14 +113,14 @@ export default function TasksPage() {
               type="text"
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
-              placeholder="What needs to be done?"
+              placeholder="O que precisa ser feito?"
               className="w-full bg-[var(--surface-1)] border border-[var(--line)] text-[var(--text)] placeholder-[var(--text-3)] rounded-[var(--r-md)] px-4 py-3 mb-3 text-[14px] focus:outline-none focus:border-[var(--line-strong)]"
               onKeyDown={(e) => e.key === "Enter" && addTask()}
               autoFocus
             />
             <div className="flex gap-2">
-              <Button variant="primary" onClick={addTask}>Add Task</Button>
-              <Button variant="ghost" onClick={() => setShowAddTask(false)}>Cancel</Button>
+              <Button variant="primary" onClick={addTask}>Adicionar tarefa</Button>
+              <Button variant="ghost" onClick={() => setShowAddTask(false)}>Cancelar</Button>
             </div>
           </div>
         )}
@@ -147,7 +147,7 @@ export default function TasksPage() {
                       />
                     ))}
                   {count === 0 && (
-                    <p className="text-[var(--text-4)] text-[12.5px] text-center py-8">No tasks</p>
+                    <p className="text-[var(--text-4)] text-[12.5px] text-center py-8">Nenhuma tarefa</p>
                   )}
                 </div>
               </div>
@@ -195,7 +195,7 @@ function TaskCard({
         >
           {columns.map((col) => (
             <option key={col.id} value={col.id}>
-              Move to {col.label}
+              Mover para {col.label}
             </option>
           ))}
         </select>

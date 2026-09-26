@@ -148,7 +148,7 @@ function InboxCard({
               }}
             >
               <Check className="w-3.5 h-3.5" />
-              Save
+              Salvar
             </button>
             <button
               type="button"
@@ -159,7 +159,7 @@ function InboxCard({
               }}
               className="btn-ghost inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[12px] font-medium"
             >
-              Cancel
+              Cancelar
             </button>
           </>
         ) : (
@@ -175,7 +175,7 @@ function InboxCard({
               }}
             >
               <Check className="w-3.5 h-3.5" />
-              Approve
+              Aprovar
             </button>
             <button
               type="button"
@@ -184,7 +184,7 @@ function InboxCard({
               style={{ border: "1px solid var(--line)" }}
             >
               <X className="w-3.5 h-3.5" />
-              Reject
+              Rejeitar
             </button>
             <button
               type="button"
@@ -193,7 +193,7 @@ function InboxCard({
               style={{ border: "1px solid var(--line)" }}
             >
               <Pencil className="w-3.5 h-3.5" />
-              Edit
+              Editar
             </button>
           </>
         )}
@@ -252,8 +252,8 @@ export function ApprovalInbox({ compact = false }: { compact?: boolean }) {
         <Panel className="p-2">
           <EmptyState
             icon={<Check className="w-6 h-6" style={{ color: "var(--up)" }} />}
-            title="Nothing needs you right now — you're clear."
-            hint="Side-effecting work waiting on your call will land here."
+            title="Nada precisa da sua atenção agora — está tudo certo."
+            hint="Ações com efeitos externos que aguardam sua decisão aparecerão aqui."
           />
         </Panel>
       ) : requests.length === 0 ? (
@@ -261,7 +261,7 @@ export function ApprovalInbox({ compact = false }: { compact?: boolean }) {
         <Panel className="p-2">
           <EmptyState
             icon={<Inbox className="w-6 h-6" />}
-            title="Checking the queue…"
+            title="Verificando a fila…"
           />
         </Panel>
       ) : (
@@ -280,7 +280,7 @@ export function ApprovalInbox({ compact = false }: { compact?: boolean }) {
               className="inline-flex items-center gap-1 self-start text-[12.5px] font-medium transition-colors"
               style={{ color: "var(--accent)" }}
             >
-              View all in Hermes →
+              Ver tudo no Hermes →
             </a>
           )}
         </div>

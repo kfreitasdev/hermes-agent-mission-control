@@ -47,7 +47,7 @@ export default function GardenPage() {
         lastUpdatedRef.current = data.lastUpdated;
         setBlob(data);
       }
-    } catch { setError('Failed to load garden'); }
+    } catch { setError('Não foi possível carregar o jardim'); }
     if (!silent) setLoading(false);
   }
 
@@ -115,7 +115,7 @@ export default function GardenPage() {
   if (error || !blob || !Array.isArray(blob.plants)) {
     return (
       <div className="w-full mx-auto p-6">
-        <EmptyState title={error ?? 'Unexpected data format — please reload.'} />
+        <EmptyState title={error ?? 'Formato de dados inesperado — recarregue a página.'} />
       </div>
     );
   }
@@ -125,13 +125,13 @@ export default function GardenPage() {
 
   // Watering calendar — next 7 days
   const today = new Date();
-  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const DAY_NAMES = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     const dayIdx = d.getDay();
     const plants = blob.plants.filter(p => p.waterDays.includes(dayIdx));
-    return { date: d, dayIdx, label: i === 0 ? 'Today' : DAY_NAMES[dayIdx], dateNum: d.getDate(), plants };
+    return { date: d, dayIdx, label: i === 0 ? 'Hoje' : DAY_NAMES[dayIdx], dateNum: d.getDate(), plants };
   });
 
   return (
@@ -139,40 +139,40 @@ export default function GardenPage() {
       {/* Header */}
       <div className="hq-rise flex items-end justify-between gap-4 pt-2 pb-8" style={rise(0)}>
         <div>
-          <div className="eyebrow mb-2.5">🌿 Shared Garden</div>
-          <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Our Garden</h1>
+          <div className="eyebrow mb-2.5">🌿 Jardim compartilhado</div>
+          <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Nosso jardim</h1>
           <p className="num text-[var(--text-4)] text-[12px] mt-3">
-            Syncs with Marwa every 30s · {blob.plants.length} plants
+            Sincroniza a cada 30 s · {blob.plants.length} plantas
           </p>
         </div>
         <Button variant="primary" onClick={() => setShowForm(true)}>
           <Plus className="w-4 h-4" />
-          Add plant
+          Adicionar planta
         </Button>
       </div>
 
       {/* Add form */}
       {showForm && (
         <div className="hq-rise panel p-6 mb-8" style={rise(1)}>
-          <span className="eyebrow">New plant</span>
+          <span className="eyebrow">Nova planta</span>
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_80px_1fr] gap-3 mt-4 mb-3">
-            <input placeholder="Plant name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputCls} />
+            <input placeholder="Nome da planta" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputCls} />
             <input placeholder="🌿" value={form.emoji} onChange={e => setForm(f => ({ ...f, emoji: e.target.value }))} className={`${inputCls} text-center text-[20px]`} />
             <select value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value as 'indoor' | 'outdoor' }))} className={inputCls}>
-              <option value="indoor">Indoor</option>
-              <option value="outdoor">Outdoor</option>
+              <option value="indoor">Dentro de casa</option>
+              <option value="outdoor">Ao ar livre</option>
             </select>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <input placeholder="Water schedule (e.g. Sunday)" value={form.waterSchedule} onChange={e => setForm(f => ({ ...f, waterSchedule: e.target.value }))} className={inputCls} />
-            <input placeholder="Image URL (optional)" value={form.img} onChange={e => setForm(f => ({ ...f, img: e.target.value }))} className={inputCls} />
+            <input placeholder="Frequência de rega (ex.: domingo)" value={form.waterSchedule} onChange={e => setForm(f => ({ ...f, waterSchedule: e.target.value }))} className={inputCls} />
+            <input placeholder="URL da imagem (opcional)" value={form.img} onChange={e => setForm(f => ({ ...f, img: e.target.value }))} className={inputCls} />
           </div>
-          <input placeholder="Care tip (optional)" value={form.tip} onChange={e => setForm(f => ({ ...f, tip: e.target.value }))} className={`${inputCls} w-full mb-4`} />
+          <input placeholder="Dica de cuidado (opcional)" value={form.tip} onChange={e => setForm(f => ({ ...f, tip: e.target.value }))} className={`${inputCls} w-full mb-4`} />
           <div className="flex gap-2">
             <Button variant="primary" onClick={addPlant} disabled={saving || !form.name.trim()}>
-              {saving ? 'Saving...' : 'Add'}
+              {saving ? 'Salvando...' : 'Adicionar'}
             </Button>
-            <Button variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
           </div>
         </div>
       )}
@@ -181,7 +181,7 @@ export default function GardenPage() {
       <div className="mb-10">
         <div className="eyebrow flex items-center gap-1.5 mb-4">
           <Droplets className="w-3.5 h-3.5" style={{ color: 'var(--up)' }} />
-          Watering This Week
+          Rega desta semana
         </div>
         <div className="grid grid-cols-7 gap-2">
           {weekDays.map(({ label, dateNum, plants }, i) => {
@@ -215,7 +215,7 @@ export default function GardenPage() {
       </div>
 
       {/* Plant grid helper */}
-      {[{ title: 'Indoor', emoji: '🪴', plants: indoor }, { title: 'Outdoor', emoji: '🌳', plants: outdoor }].map(group => (
+      {[{ title: 'Dentro de casa', emoji: '🪴', plants: indoor }, { title: 'Ao ar livre', emoji: '🌳', plants: outdoor }].map(group => (
         group.plants.length === 0 ? null :
         <div key={group.title} className="mb-9">
           <div className="eyebrow mb-4">{group.emoji} {group.title}</div>
@@ -237,16 +237,16 @@ export default function GardenPage() {
                     <button
                       onClick={() => removePlant(plant.id)}
                       className="text-[var(--text-4)] hover:text-[var(--text-2)] transition-colors p-0.5 leading-none"
-                      aria-label="Remove plant"
+                      aria-label="Remover planta"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                   <p className="text-[12px] mt-1 mb-0.5 flex items-center gap-1" style={{ color: 'var(--up)' }}>
-                    <Droplets className="w-3 h-3" /> {plant.waterSchedule || 'No schedule'}
+                    <Droplets className="w-3 h-3" /> {plant.waterSchedule || 'Sem frequência definida'}
                   </p>
                   {plant.tip && <p className="text-[var(--text-3)] text-[11px] mt-1 leading-relaxed">{plant.tip}</p>}
-                  {plant.addedBy && <p className="text-[var(--text-4)] text-[10px] num mt-2">Added by {plant.addedBy}</p>}
+                  {plant.addedBy && <p className="text-[var(--text-4)] text-[10px] num mt-2">Adicionada por {plant.addedBy}</p>}
                 </div>
               </div>
             ))}

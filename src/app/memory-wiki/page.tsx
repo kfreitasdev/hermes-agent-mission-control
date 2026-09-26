@@ -78,6 +78,24 @@ const TYPES: MemType[] = [
   "note",
 ];
 
+const TYPE_LABELS: Record<MemType, string> = {
+  fact: "Fato",
+  preference: "Preferência",
+  decision: "Decisão",
+  event: "Evento",
+  project: "Projeto",
+  contact: "Contato",
+  lesson: "Lição",
+  metric: "Métrica",
+  note: "Nota",
+};
+
+const STATUS_LABELS: Record<MemStatus, string> = {
+  active: "Ativa",
+  superseded: "Substituída",
+  archived: "Arquivada",
+};
+
 type Tone = "neutral" | "up" | "down" | "warn" | "accent";
 function typeTone(t: string): Tone {
   if (t === "decision") return "accent";
@@ -92,22 +110,22 @@ function timeAgo(d: string | null): string {
   const diff = Date.now() - new Date(d).getTime();
   if (Number.isNaN(diff)) return "—";
   const s = Math.floor(diff / 1000);
-  if (s < 45) return "just now";
+  if (s < 45) return "agora mesmo";
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `${m} min atrás`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return `${h} h atrás`;
   const days = Math.floor(h / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return `${days} d atrás`;
   const mo = Math.floor(days / 30);
-  return `${mo}mo ago`;
+  return `${mo} meses atrás`;
 }
 
 function fmtDate(d: string | null): string {
   if (!d) return "—";
   const dt = new Date(d);
   if (Number.isNaN(dt.getTime())) return "—";
-  return dt.toLocaleDateString("en-US", {
+  return dt.toLocaleDateString("pt-BR", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -128,9 +146,9 @@ async function getJSON<T>(url: string): Promise<T | null> {
 function confidenceMeta(c: number): { label: string; color: string } {
   // Accept 0–1 or 0–100 scales.
   const v = c > 1 ? c / 100 : c;
-  if (v >= 0.75) return { label: "high confidence", color: "var(--up)" };
-  if (v >= 0.4) return { label: "medium confidence", color: "var(--warn)" };
-  return { label: "low confidence", color: "var(--down)" };
+  if (v >= 0.75) return { label: "alta confiança", color: "var(--up)" };
+  if (v >= 0.4) return { label: "confiança média", color: "var(--warn)" };
+  return { label: "baixa confiança", color: "var(--down)" };
 }
 
 function ConfidenceDot({ value }: { value: number }) {
@@ -262,7 +280,7 @@ function Markdown({ body }: { body: string }) {
 
   if (!blocks.length) {
     return (
-      <p className="text-[13px] text-[var(--text-3)] italic">No content.</p>
+      <p className="text-[13px] text-[var(--text-3)] italic">Sem conteúdo.</p>
     );
   }
   return <div className="space-y-0.5">{blocks}</div>;
@@ -290,9 +308,9 @@ function EntryCard({
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap mb-1.5">
-            <Pill tone={typeTone(entry.type)}>{entry.type}</Pill>
+            <Pill tone={typeTone(entry.type)}>{TYPE_LABELS[entry.type]}</Pill>
             {entry.status !== "active" && (
-              <Pill tone="neutral">{entry.status}</Pill>
+              <Pill tone="neutral">{STATUS_LABELS[entry.status]}</Pill>
             )}
             {entry.confidence != null && (
               <ConfidenceDot value={entry.confidence} />
@@ -375,7 +393,7 @@ function EntryCard({
           <div className="mt-5">
             <Button variant="ghost" size="sm" onClick={onEdit}>
               <Pencil className="w-3.5 h-3.5" />
-              Edit
+              Editar
             </Button>
           </div>
         </div>
@@ -484,7 +502,7 @@ function EntryEditor({
     <div className="fixed inset-0 z-50 flex justify-end">
       <button
         type="button"
-        aria-label="Close editor"
+        aria-label="Fechar editor"
         onClick={onClose}
         className="absolute inset-0 bg-black/50"
         style={{ backdropFilter: "blur(2px)" }}
@@ -492,15 +510,15 @@ function EntryEditor({
       <div className="elevated relative w-full max-w-md h-full overflow-y-auto p-6 animate-[hq-rise_0.3s_ease]">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div>
-            <Eyebrow>{isNew ? "New memory" : "Edit memory"}</Eyebrow>
+            <Eyebrow>{isNew ? "Nova memória" : "Editar memória"}</Eyebrow>
             <h2 className="mt-1.5 text-[22px] font-semibold tracking-[-0.02em] text-[var(--text)]">
-              {isNew ? "Add entry" : "Correct entry"}
+              {isNew ? "Adicionar entrada" : "Corrigir entrada"}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Fechar"
             className="btn-ghost inline-flex items-center justify-center w-9 h-9 shrink-0"
           >
             <X className="w-4 h-4" />
@@ -519,21 +537,21 @@ function EntryEditor({
               <Check className="w-6 h-6" style={{ color: "var(--up)" }} />
             </div>
             <p className="text-[15px] font-medium text-[var(--text)]">
-              Saved — Hermes will write it to memory
+              Salvo — o Hermes gravará na memória
             </p>
             <p className="mt-1.5 text-[12.5px] text-[var(--text-3)] max-w-xs">
-              The bridge is committing this to the wiki. It will reappear here
-              once mirrored.
+              A bridge está gravando esta entrada na Wiki. Ela reaparecerá aqui
+              assim que for sincronizada.
             </p>
           </div>
         ) : (
           <div className="space-y-4">
             <div>
-              <label className={labelCls}>Title</label>
+              <label className={labelCls}>Título</label>
               <input
                 value={d.title}
                 onChange={(e) => set("title", e.target.value)}
-                placeholder="What should Hermes remember?"
+                placeholder="O que o Hermes deve lembrar?"
                 className={inputCls}
                 autoFocus
               />
@@ -541,7 +559,7 @@ function EntryEditor({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Type</label>
+                <label className={labelCls}>Tipo</label>
                 <select
                   value={d.type}
                   onChange={(e) => set("type", e.target.value as MemType)}
@@ -549,7 +567,7 @@ function EntryEditor({
                 >
                   {TYPES.map((t) => (
                     <option key={t} value={t}>
-                      {t}
+                      {TYPE_LABELS[t]}
                     </option>
                   ))}
                 </select>
@@ -561,25 +579,25 @@ function EntryEditor({
                   onChange={(e) => set("status", e.target.value as MemStatus)}
                   className={inputCls}
                 >
-                  <option value="active">active</option>
-                  <option value="superseded">superseded</option>
-                  <option value="archived">archived</option>
+                  <option value="active">Ativa</option>
+                  <option value="superseded">Substituída</option>
+                  <option value="archived">Arquivada</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className={labelCls}>Tags</label>
+              <label className={labelCls}>Marcadores</label>
               <input
                 value={d.tags}
                 onChange={(e) => set("tags", e.target.value)}
-                placeholder="comma, separated, tags"
+                placeholder="marcador, separado, por vírgulas"
                 className={inputCls}
               />
             </div>
 
             <div>
-              <label className={labelCls}>Confidence (optional)</label>
+              <label className={labelCls}>Confiança (opcional)</label>
               <input
                 value={d.confidence}
                 onChange={(e) => set("confidence", e.target.value)}
@@ -590,7 +608,7 @@ function EntryEditor({
             </div>
 
             <div>
-              <label className={labelCls}>Body · markdown</label>
+              <label className={labelCls}>Conteúdo · Markdown</label>
               <textarea
                 value={d.body}
                 onChange={(e) => set("body", e.target.value)}
@@ -607,10 +625,10 @@ function EntryEditor({
                 disabled={busy || !d.title.trim()}
               >
                 <Check className="w-3.5 h-3.5" />
-                Save to memory
+                Salvar na memória
               </Button>
               <Button variant="ghost" onClick={onClose}>
-                Cancel
+                Cancelar
               </Button>
             </div>
           </div>
@@ -686,22 +704,22 @@ export default function MemoryWikiPage() {
         {/* Header */}
         <div className="hq-rise pt-4 pb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-5">
           <div>
-            <Eyebrow>Hermes memory</Eyebrow>
+            <Eyebrow>Memória do Hermes</Eyebrow>
             <h1 className="mt-2.5 text-[40px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">
-              Memory Wiki
+              Wiki de memória
             </h1>
             <p className="mt-3.5 text-[14px] text-[var(--text-2)] leading-relaxed max-w-lg">
-              Hermes&apos; long-term brain — everything it remembers, that you
-              can browse, search, and correct.
+              O cérebro de longo prazo do Hermes — tudo o que ele lembra,
+              para você consultar, pesquisar e corrigir.
             </p>
             <p className="num text-[11.5px] text-[var(--text-3)] mt-3">
-              synced {timeAgo(lastSync)}
+              sincronizado {timeAgo(lastSync)}
             </p>
           </div>
           <div className="shrink-0">
             <Button variant="primary" onClick={openNew}>
               <Plus className="w-3.5 h-3.5" />
-              New entry
+              Nova entrada
             </Button>
           </div>
         </div>
@@ -714,7 +732,7 @@ export default function MemoryWikiPage() {
               <input
                 value={qInput}
                 onChange={(e) => setQInput(e.target.value)}
-                placeholder="Search memory — titles, bodies, tags…"
+                placeholder="Pesquisar memória — títulos, conteúdos, marcadores…"
                 className="w-full bg-transparent text-[14px] text-[var(--text)] placeholder:text-[var(--text-3)] pl-10 pr-3.5 py-2.5 rounded-[10px] border border-[var(--line)] focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] outline-none transition-colors"
               />
             </div>
@@ -729,7 +747,7 @@ export default function MemoryWikiPage() {
                     : "text-[var(--text-3)] hover:text-[var(--text-2)]"
                 }`}
               >
-                Active
+                Ativas
               </button>
               <button
                 type="button"
@@ -740,7 +758,7 @@ export default function MemoryWikiPage() {
                     : "text-[var(--text-3)] hover:text-[var(--text-2)]"
                 }`}
               >
-                All
+                Todas
               </button>
             </div>
           </div>
@@ -748,7 +766,7 @@ export default function MemoryWikiPage() {
           {/* Type filter chips */}
           <div className="flex items-center gap-2 flex-wrap">
             <TypeChip
-              label="All"
+              label="Todas"
               count={total}
               active={typeFilter === "all"}
               onClick={() => setTypeFilter("all")}
@@ -782,13 +800,13 @@ export default function MemoryWikiPage() {
                 icon={<BookOpen className="w-6 h-6" />}
                 title={
                   q || typeFilter !== "all"
-                    ? "No matching entries"
-                    : "No memory synced yet"
+                    ? "Nenhuma entrada encontrada"
+                    : "Nenhuma memória sincronizada ainda"
                 }
                 hint={
                   q || typeFilter !== "all"
-                    ? "Try a different search or clear the filters."
-                    : "Once the Hermes bridge is running with a ~/.hermes/wiki, entries appear here."
+                    ? "Tente outra pesquisa ou limpe os filtros."
+                    : "Quando a bridge do Hermes estiver executando com uma Wiki configurada, as entradas aparecerão aqui."
                 }
                 action={
                   q || typeFilter !== "all" ? (
@@ -801,7 +819,7 @@ export default function MemoryWikiPage() {
                         setTypeFilter("all");
                       }}
                     >
-                      Clear filters
+                      Limpar filtros
                     </Button>
                   ) : undefined
                 }

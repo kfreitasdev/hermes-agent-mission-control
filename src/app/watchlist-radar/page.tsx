@@ -76,15 +76,15 @@ function SignalCard({ signal }: { signal: Signal }) {
         <p className="text-[13px] text-[var(--text-2)] leading-relaxed">{signal.summary}</p>
       </div>
 
-      {/* Draft tweet box */}
+      {/* Rascunho de publicação box */}
       {signal.draft && (
         <div className="mx-5 mb-4 rounded-[var(--r-md)] border border-[var(--line)] bg-[var(--surface-2)] p-3 space-y-2">
           <div className="flex items-center justify-between">
-            <span className="eyebrow">Draft tweet</span>
+            <span className="eyebrow">Rascunho de publicação</span>
             <button onClick={handleCopy}
               className="text-[11px] font-medium transition-colors"
               style={{ color: copied ? "var(--up)" : "var(--text-3)" }}>
-              {copied ? "Copied" : "Copy"}
+              {copied ? "Copiado" : "Copiar"}
             </button>
           </div>
           <p className="text-[12px] text-[var(--text)] leading-relaxed whitespace-pre-line">{signal.draft}</p>
@@ -95,7 +95,7 @@ function SignalCard({ signal }: { signal: Signal }) {
       <div className="mt-auto px-5 pb-4 flex gap-2">
         <a href={signal.url} target="_blank" rel="noopener noreferrer"
           className="btn-ghost flex-1 justify-center py-2 text-[12px] font-medium text-center">
-          View on X
+          Ver no X
         </a>
         <button onClick={handleSnipe}
           className="flex-1 py-2 rounded-[var(--r-sm)] text-[12px] font-semibold transition-colors text-center inline-flex items-center justify-center gap-1"
@@ -139,7 +139,7 @@ export default function WatchlistRadarPage() {
           )}
         </div>
         <button onClick={load} className="btn-ghost px-3 py-1.5 text-[12px] font-medium">
-          Refresh
+          Atualizar
         </button>
       </div>
 
@@ -149,8 +149,8 @@ export default function WatchlistRadarPage() {
         </div>
       ) : data.signals.length === 0 ? (
         <EmptyState
-          title="No signals in the last 3 hours"
-          hint="Radar checks every 15 min across your watchlist."
+          title="Nenhum sinal nas últimas 3 horas"
+          hint="O radar verifica sua lista a cada 15 minutos."
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

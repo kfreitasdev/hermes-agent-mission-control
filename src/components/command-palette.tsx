@@ -34,7 +34,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "X", href: "/x", icon: Twitter },
-  { label: "Articles", href: "/articles", icon: FileText },
+  { label: "Artigos", href: "/articles", icon: FileText },
   { label: "YouTube", href: "/youtube", icon: Youtube },
   { label: "Client Pulse", href: "/client-pulse", icon: Activity },
   { label: "Agents", href: "/agents", icon: Bot },
@@ -209,7 +209,7 @@ export function CommandPalette() {
               setQuery(e.target.value);
               setActive(0);
             }}
-            placeholder="Search, or ask Hermes…"
+            placeholder="Pesquise ou pergunte ao Hermes…"
             spellCheck={false}
             autoComplete="off"
             className="num flex-1 bg-transparent border-0 outline-none text-[15px] text-[var(--text)] placeholder-[var(--text-3)]"
@@ -244,7 +244,7 @@ export function CommandPalette() {
 
           {dispatchRow && (
             <div className="px-2 pt-1">
-              <div className="eyebrow px-3 py-1.5">Dispatch to Hermes</div>
+              <div className="eyebrow px-3 py-1.5">Enviar para o Hermes</div>
               {(() => {
                 const idx = rows.indexOf(dispatchRow);
                 return (
@@ -262,10 +262,10 @@ export function CommandPalette() {
                     }
                   >
                     {dispatched ? (
-                      <span style={{ color: "var(--up)" }}>Dispatched ✓</span>
+                      <span style={{ color: "var(--up)" }}>Enviado ✓</span>
                     ) : (
                       <span className="text-[var(--text)] truncate">
-                        Ask Hermes:{" "}
+                        Perguntar ao Hermes:{" "}
                         <span className="text-[var(--text-2)]">
                           &ldquo;{dispatchRow.query}&rdquo;
                         </span>
@@ -279,7 +279,7 @@ export function CommandPalette() {
 
           {rows.length === 0 && (
             <div className="px-5 py-8 text-center text-[13px] text-[var(--text-3)]">
-              No matches.
+              Nenhum resultado.
             </div>
           )}
         </div>
@@ -287,15 +287,15 @@ export function CommandPalette() {
         {/* hint bar */}
         <div className="flex items-center gap-4 px-4 py-2.5 border-t border-[var(--line)] text-[11px] num text-[var(--text-3)]">
           <span className="inline-flex items-center gap-1.5">
-            <CornerDownLeft className="w-3 h-3" /> to run
+            <CornerDownLeft className="w-3 h-3" /> para executar
           </span>
           <span aria-hidden>·</span>
-          <span>esc to close</span>
+          <span>Esc para fechar</span>
           <span className="ml-auto inline-flex items-center gap-1.5">
             <kbd className="rounded px-1.5 py-0.5 bg-[var(--surface-1)] border border-[var(--line)]">
               ↑↓
             </kbd>
-            to move
+            para mover
           </span>
         </div>
       </div>

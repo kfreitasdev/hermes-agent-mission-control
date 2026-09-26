@@ -92,7 +92,7 @@ export function HermesBriefing() {
           )}
           <Button variant="ghost" size="sm" onClick={generate} disabled={generating}>
             <RefreshCw className={`w-3.5 h-3.5 ${generating ? "animate-spin" : ""}`} />
-            {generating ? "Generating…" : "Generate"}
+            {generating ? "Gerando…" : "Gerar"}
           </Button>
         </div>
       </div>
@@ -100,11 +100,11 @@ export function HermesBriefing() {
       {empty ? (
         <div className="py-6 text-center">
           <p className="text-[14px] text-[var(--text-2)]">
-            {generating ? "Hermes is writing your brief… (~1 min)" : loaded ? "No brief yet." : "Loading…"}
+            {generating ? "O Hermes está escrevendo seu briefing… (~1 min)" : loaded ? "Nenhum briefing ainda." : "Carregando…"}
           </p>
           {!generating && loaded && (
             <p className="mt-1 text-[12.5px] text-[var(--text-3)]">
-              It auto-generates each morning — or hit Generate to get one now.
+              Ele é gerado automaticamente todas as manhãs — ou clique em Gerar para obter um agora.
             </p>
           )}
         </div>

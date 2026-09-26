@@ -37,9 +37,9 @@ export default function XPage() {
   const [tab, setTab] = useState<Tab>("content");
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "content", label: "Content" },
-    { key: "performance", label: "Performance" },
-    { key: "radar", label: "Trend Radar" },
+    { key: "content", label: "Conteúdo" },
+    { key: "performance", label: "Desempenho" },
+    { key: "radar", label: "Radar de tendências" },
   ];
 
   return (

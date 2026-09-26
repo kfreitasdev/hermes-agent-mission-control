@@ -23,12 +23,12 @@ interface Agent {
 }
 
 const statusConfig: Record<string, { color: string; dot: string; label: string; pulse?: boolean }> = {
-  idle: { color: "var(--warn)", dot: "var(--warn)", label: "Idle" },
-  working: { color: "var(--accent)", dot: "var(--accent)", label: "Working", pulse: true },
-  error: { color: "var(--down)", dot: "var(--down)", label: "Error" },
+  idle: { color: "var(--warn)", dot: "var(--warn)", label: "Ocioso" },
+  working: { color: "var(--accent)", dot: "var(--accent)", label: "Trabalhando", pulse: true },
+  error: { color: "var(--down)", dot: "var(--down)", label: "Erro" },
   offline: { color: "var(--text-3)", dot: "var(--text-4)", label: "Offline" },
   online: { color: "var(--up)", dot: "var(--up)", label: "Online", pulse: true },
-  active: { color: "var(--up)", dot: "var(--up)", label: "Active", pulse: true },
+  active: { color: "var(--up)", dot: "var(--up)", label: "Ativo", pulse: true },
   mixed: { color: "var(--warn)", dot: "var(--warn)", label: "Partial" },
 };
 
@@ -85,7 +85,7 @@ function AgentCard({ agent, isExpanded, onToggle }: { agent: Agent; isExpanded: 
           {/* Stats */}
           <div className="text-right shrink-0">
             <div className="num text-[22px] font-semibold text-[var(--text)] leading-none">{agent.tasksCompleted}</div>
-            <div className="eyebrow mt-1.5">tasks</div>
+            <div className="eyebrow mt-1.5">tarefas</div>
             {agent.lastActive && (
               <div className="num text-[10px] text-[var(--text-4)] mt-1">{timeAgo(agent.lastActive)}</div>
             )}
@@ -96,9 +96,9 @@ function AgentCard({ agent, isExpanded, onToggle }: { agent: Agent; isExpanded: 
       {/* Expanded activity feed */}
       {isExpanded && (
         <div className="px-5 py-4 space-y-2.5" style={{ borderTop: "1px solid var(--line)" }}>
-          <h4 className="eyebrow">Recent Activity</h4>
+          <h4 className="eyebrow">Atividade recente</h4>
           {agent.recentActivity.length === 0 ? (
-            <p className="text-[12px] text-[var(--text-3)] py-2">No activity yet</p>
+            <p className="text-[12px] text-[var(--text-3)] py-2">Nenhuma atividade ainda</p>
           ) : (
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {agent.recentActivity.slice(0, 10).map((activity, i) => (
@@ -141,7 +141,7 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
         body: JSON.stringify({ agentId: agent.id, message: text, history: msgs }),
       });
       const d = await r.json() as { reply?: string; requestId?: string; status?: string; error?: string };
-      setMsgs([...newMsgs, { role: "assistant", content: d.reply || d.error || "Request queued." }]);
+      setMsgs([...newMsgs, { role: "assistant", content: d.reply || d.error || "Solicitação enfileirada." }]);
       if (d.requestId && d.status === "queued") {
         void (async () => {
           for (let attempt = 0; attempt < 120; attempt += 1) {
@@ -156,7 +156,7 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
                 ...previous,
                 {
                   role: "assistant" as const,
-                  content: request.result || request.error || `Request ${request.status}.`,
+                  content: request.result || request.error || `Solicitação ${request.status}.`,
                 },
               ]);
               return;
@@ -167,7 +167,7 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
         })();
       }
     } catch {
-      setMsgs([...newMsgs, { role: "assistant", content: "Sorry, something went wrong. Try again." }]);
+      setMsgs([...newMsgs, { role: "assistant", content: "Algo deu errado. Tente novamente." }]);
     }
     setLoading(false);
   }
@@ -190,7 +190,7 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
         <div className="h-80 overflow-y-auto p-4 space-y-3 flex flex-col" style={{ background: "var(--surface-1)" }}>
           {msgs.length === 0 && (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-[var(--text-3)] text-[13px] text-center">Ask {agent.name} anything.<br/>They&apos;re ready.</p>
+              <p className="text-[var(--text-3)] text-[13px] text-center">Pergunte qualquer coisa ao {agent.name}.<br/>Ele está pronto.</p>
             </div>
           )}
           {msgs.map((m, i) => (
@@ -207,7 +207,7 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
           {loading && (
             <div className="flex justify-start">
               <div className="rounded-[var(--r-md)] px-3.5 py-2" style={{ background: "var(--surface-2)", border: "1px solid var(--line)" }}>
-                <span className="text-[var(--text-3)] text-[13px]">{agent.emoji} thinking…</span>
+                <span className="text-[var(--text-3)] text-[13px]">{agent.emoji} pensando…</span>
               </div>
             </div>
           )}
@@ -219,7 +219,7 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
-            placeholder={`Message ${agent.name}…`}
+            placeholder={`Mensagem para ${agent.name}…`}
             className="flex-1 rounded-full px-4 py-2 text-[13px] text-[var(--text)] focus:outline-none transition-colors"
             style={{ background: "var(--surface-1)", border: "1px solid var(--line)" }}
           />
@@ -227,7 +227,7 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
             onClick={send}
             disabled={!input.trim() || loading}
             className="btn-primary px-4 py-2 text-[13px]"
-          >Send</button>
+          >Enviar</button>
         </div>
       </div>
     </div>
@@ -278,9 +278,9 @@ export default function AgentsPage() {
       {/* Header */}
       <div className="hq-rise flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="eyebrow mb-2.5">Agent HQ</div>
-          <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Your AI Team</h1>
-          <p className="text-[13px] text-[var(--text-3)] mt-3">Working 24/7</p>
+          <div className="eyebrow mb-2.5">Central de agentes</div>
+          <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Seu time de IA</h1>
+          <p className="text-[13px] text-[var(--text-3)] mt-3">Trabalhando 24 horas por dia</p>
         </div>
         <div className="flex items-center gap-6">
           {/* Stats */}
@@ -291,11 +291,11 @@ export default function AgentsPage() {
             </div>
             <div>
               <div className="num text-[22px] font-semibold leading-none" style={{ color: "var(--accent)" }}>{working}</div>
-              <div className="eyebrow mt-1.5">Working</div>
+              <div className="eyebrow mt-1.5">Trabalhando</div>
             </div>
             <div>
               <div className="num text-[22px] font-semibold leading-none text-[var(--text)]">{totalTasks}</div>
-              <div className="eyebrow mt-1.5">Total Tasks</div>
+              <div className="eyebrow mt-1.5">Total de tarefas</div>
             </div>
           </div>
           {/* View toggle */}
@@ -308,7 +308,7 @@ export default function AgentsPage() {
                   : "text-[var(--text-3)] hover:text-[var(--text-2)]"
               }`}
             >
-              Office
+              Escritório
             </button>
             <button
               onClick={() => setView("cards")}
@@ -318,7 +318,7 @@ export default function AgentsPage() {
                   : "text-[var(--text-3)] hover:text-[var(--text-2)]"
               }`}
             >
-              Cards
+              Cartões
             </button>
           </div>
         </div>

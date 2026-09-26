@@ -22,46 +22,46 @@ import {
 
 const navGroups = [
   {
-    name: "Overview",
+    name: "Visão geral",
     items: [
-      { href: "/", label: "Dashboard", icon: Home },
+      { href: "/", label: "Painel", icon: Home },
       { href: "/hermes", label: "Hermes", icon: Cpu },
-      { href: "/tasks", label: "Tasks", icon: ClipboardList },
+      { href: "/tasks", label: "Tarefas", icon: ClipboardList },
     ],
   },
   {
-    name: "Content",
+    name: "Conteúdo",
     items: [
       { href: "/x", label: "X", icon: Twitter },
       { href: "/content-os", label: "Pipeline", icon: Workflow },
-      { href: "/articles", label: "Articles", icon: FileText },
+      { href: "/articles", label: "Artigos", icon: FileText },
       { href: "/youtube", label: "YouTube", icon: Play },
     ],
   },
   {
-    name: "Data",
+    name: "Dados",
     items: [
-      { href: "/client-pulse", label: "Client Pulse", icon: HeartPulse },
+      { href: "/client-pulse", label: "Pulso dos clientes", icon: HeartPulse },
     ],
   },
   {
-    name: "System",
+    name: "Sistema",
     items: [
-      { href: "/agents", label: "Agents", icon: Bot },
-      { href: "/memory-wiki", label: "Memory Wiki", icon: BookOpen },
-      { href: "/ideas", label: "Ideas", icon: Lightbulb },
-      { href: "/garden", label: "Garden", icon: Flower2 },
+      { href: "/agents", label: "Agentes", icon: Bot },
+      { href: "/memory-wiki", label: "Memória e Wiki", icon: BookOpen },
+      { href: "/ideas", label: "Ideias", icon: Lightbulb },
+      { href: "/garden", label: "Jardim", icon: Flower2 },
     ],
   },
 ];
 
 // Mobile tab bar - only show the 5 most important
 const mobileTabsRaw = [
-  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/", label: "Painel", icon: Home },
   { href: "/x", label: "X", icon: Twitter },
   { href: "/youtube", label: "YouTube", icon: Play },
-  { href: "/ideas", label: "Ideas", icon: Lightbulb },
-  { href: "/agents", label: "Agents", icon: Bot },
+  { href: "/ideas", label: "Ideias", icon: Lightbulb },
+  { href: "/agents", label: "Agentes", icon: Bot },
 ];
 
 export function Sidebar() {
@@ -100,7 +100,7 @@ export function Sidebar() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="p-2 text-[var(--text-2)] hover:text-[var(--text)] transition-colors rounded-lg hover:bg-[var(--surface-1)]"
-          aria-label="Toggle menu"
+          aria-label="Alternar menu"
         >
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -224,7 +224,7 @@ export function Sidebar() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--up)] opacity-60 animate-ping" />
               <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-[var(--up)]" />
             </span>
-            <span>All systems online</span>
+            <span>Todos os sistemas online</span>
           </div>
         </div>
       </aside>

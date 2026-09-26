@@ -220,8 +220,8 @@ export default function YouTubePage() {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 md:p-6" onClick={() => setRejectModal(null)}>
         <div dir="ltr" className="panel p-4 md:p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-          <h3 className="text-sm font-semibold text-[var(--text)] mb-1">Reject: {rejectModal.title}</h3>
-          <p className="text-xs text-[var(--text-3)] mb-3">Why? This helps me learn your taste.</p>
+          <h3 className="text-sm font-semibold text-[var(--text)] mb-1">Rejeitar: {rejectModal.title}</h3>
+          <p className="text-xs text-[var(--text-3)] mb-3">Por quê? Isso me ajuda a entender seu gosto.</p>
           <textarea
             ref={rejectRef}
             defaultValue=""
@@ -238,8 +238,8 @@ export default function YouTubePage() {
               }}
               className="flex-1 text-sm py-2 rounded-[var(--r-md)] font-medium transition-colors"
               style={{ color: "var(--down)", background: "color-mix(in srgb, var(--down) 14%, transparent)" }}
-            >Reject</button>
-            <button onClick={() => { setRejectModal(null); }} className="btn-ghost flex-1 text-sm py-2">Cancel</button>
+            >Rejeitar</button>
+            <button onClick={() => { setRejectModal(null); }} className="btn-ghost flex-1 text-sm py-2">Cancelar</button>
           </div>
         </div>
       </div>
@@ -265,10 +265,10 @@ export default function YouTubePage() {
           {script.factCheck && (
             <div className="rounded-[var(--r-md)] p-2 mb-2 border" style={{ borderColor: `color-mix(in srgb, ${fcTone} 22%, transparent)`, background: `color-mix(in srgb, ${fcTone} 10%, transparent)` }}>
               <p className="text-[11px] text-[var(--text-2)]">
-                <span className="font-medium text-[var(--text)]">{script.factCheck.status} Fact Check</span>
-                {script.factCheck.status === "✅" && <span className="num ml-1" style={{ color: "var(--up)" }}>— {script.factCheck.verified} claims verified</span>}
-                {script.factCheck.status === "🔧" && <span className="ml-1" style={{ color: "var(--warn)" }}>— auto-corrected</span>}
-                {script.factCheck.status === "⚠️" && <span className="ml-1" style={{ color: "var(--down)" }}>— issues found</span>}
+                <span className="font-medium text-[var(--text)]">{script.factCheck.status} Verificação de fatos</span>
+                {script.factCheck.status === "✅" && <span className="num ml-1" style={{ color: "var(--up)" }}>— {script.factCheck.verified} afirmações verificadas</span>}
+                {script.factCheck.status === "🔧" && <span className="ml-1" style={{ color: "var(--warn)" }}>— corrigido automaticamente</span>}
+                {script.factCheck.status === "⚠️" && <span className="ml-1" style={{ color: "var(--down)" }}>— problemas encontrados</span>}
               </p>
               {script.factCheck.issues.length > 0 && (
                 <div className="mt-1 space-y-0.5">
@@ -279,7 +279,7 @@ export default function YouTubePage() {
               )}
               {script.factCheck.sourceUrls && script.factCheck.sourceUrls.length > 0 && (
                 <div className="mt-1.5 pt-1.5 border-t border-[var(--line)]">
-                  <p className="text-[9px] text-[var(--text-3)] mb-0.5">📚 Sources:</p>
+                  <p className="text-[9px] text-[var(--text-3)] mb-0.5">📚 Fontes:</p>
                   {script.factCheck.sourceUrls.slice(0, 5).map((url, i) => (
                     <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block text-[9px] truncate hover:underline" style={{ color: "var(--accent)" }}>🔗 {url}</a>
                   ))}
@@ -294,7 +294,7 @@ export default function YouTubePage() {
           )}
           {script.onScreenText && (
             <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-2 mb-2 border border-[var(--line)]">
-              <p className="eyebrow mb-0.5">📺 On-Screen Text</p>
+              <p className="eyebrow mb-0.5">📺 Texto na tela</p>
               <p className="text-[12px] text-[var(--text-2)] font-medium">{script.onScreenText}</p>
             </div>
           )}
@@ -325,7 +325,7 @@ export default function YouTubePage() {
 
                 {script.titleVariants && script.titleVariants.length > 0 && (
                   <div>
-                    <p className="eyebrow mb-1.5">Title Variants</p>
+                    <p className="eyebrow mb-1.5">Variações de título</p>
                     <div className="space-y-1">
                       {script.titleVariants.map((v, i) => (
                         <div key={i} className="flex items-start gap-2 group">
@@ -334,7 +334,7 @@ export default function YouTubePage() {
                           <button
                             onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(v); }}
                             className={`opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ${copyBtn}`}
-                          >copy</button>
+                          >copiar</button>
                         </div>
                       ))}
                     </div>
@@ -343,13 +343,13 @@ export default function YouTubePage() {
 
                 {script.seoTitle && (
                   <div>
-                    <p className="eyebrow mb-1">Optimized Title</p>
+                    <p className="eyebrow mb-1">Título otimizado</p>
                     <div className="flex items-center gap-2">
                       <p className="text-[12px] font-medium flex-1" style={{ color: "var(--accent)" }}>{script.seoTitle}</p>
                       <button
                         onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(script.seoTitle!); }}
                         className={copyBtn}
-                      >copy</button>
+                      >copiar</button>
                     </div>
                     <p className="num text-[10px] text-[var(--text-4)] mt-0.5">{script.seoTitle.length}/60 chars</p>
                   </div>
@@ -363,7 +363,7 @@ export default function YouTubePage() {
                       <button
                         onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(script.seoDescription!); }}
                         className={`shrink-0 ${copyBtn}`}
-                      >copy</button>
+                      >copiar</button>
                     </div>
                   </div>
                 )}
@@ -379,7 +379,7 @@ export default function YouTubePage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(script.seoTags!.join(', ')); }}
                       className={`mt-1.5 ${copyBtn}`}
-                    >📋 Copy all tags</button>
+                    >📋 Copiar todas as tags</button>
                   </div>
                 )}
 
@@ -394,7 +394,7 @@ export default function YouTubePage() {
                     <button
                       onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(script.seoChapters!.map(c => `${c.time} ${c.label}`).join('\n')); }}
                       className={`mt-1.5 ${copyBtn}`}
-                    >📋 Copy chapters</button>
+                    >📋 Copiar capítulos</button>
                   </div>
                 )}
 
@@ -413,20 +413,19 @@ export default function YouTubePage() {
                   const full = `${script.hook}\n\n${script.storySetup}\n\n${script.conflict}\n\n${script.insight}\n\n${script.cta}`;
                   navigator.clipboard.writeText(full);
                 }}
-              >📋 Copy</Button>
-
+              >📋 Copiar</Button>
               {script.status === "draft" && (
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); updateScript(script.id, { status: "tofilm" }); }}
                     className="text-xs px-3 py-1.5 rounded-[var(--r-md)] font-medium transition-colors"
                     style={{ color: "var(--up)", background: "color-mix(in srgb, var(--up) 12%, transparent)" }}
-                  >Approve</button>
+                  >Aprovar</button>
                   <button
                     onClick={(e) => { e.stopPropagation(); setRejectModal({ type: "script", id: script.id, title: script.title }); }}
                     className="text-xs px-3 py-1.5 rounded-[var(--r-md)] transition-colors"
                     style={{ color: "var(--down)", background: "color-mix(in srgb, var(--down) 12%, transparent)" }}
-                  >Reject</button>
+                  >Rejeitar</button>
                 </>
               )}
 
@@ -436,22 +435,22 @@ export default function YouTubePage() {
                     onClick={(e) => { e.stopPropagation(); updateScript(script.id, { status: "filmed" }); }}
                     className="text-xs px-3 py-1.5 rounded-[var(--r-md)] font-medium transition-colors"
                     style={{ color: "var(--up)", background: "color-mix(in srgb, var(--up) 12%, transparent)" }}
-                  >Filmed</button>
+                  >Gravado</button>
                   <button
                     onClick={(e) => { e.stopPropagation(); deleteScript(script.id); }}
                     className="text-xs px-3 py-1.5 rounded-[var(--r-md)] transition-colors"
                     style={{ color: "var(--down)", background: "color-mix(in srgb, var(--down) 12%, transparent)" }}
-                  >🗑 Delete</button>
-                  <Button size="sm" variant="ghost" onClick={() => updateScript(script.id, { status: "draft" })}>↩ Back to Scripts</Button>
+                  >🗑 Excluir</button>
+                  <Button size="sm" variant="ghost" onClick={() => updateScript(script.id, { status: "draft" })}>↩ Voltar para os roteiros</Button>
                 </>
               )}
 
               {script.status === "filmed" && (
-                <Button size="sm" variant="ghost" onClick={() => updateScript(script.id, { status: "tofilm" })}>↩ Back to To Film</Button>
+                <Button size="sm" variant="ghost" onClick={() => updateScript(script.id, { status: "tofilm" })}>↩ Voltar para prontos para gravar</Button>
               )}
 
               {script.status === "rejected" && (
-                <Button size="sm" variant="ghost" onClick={() => updateScript(script.id, { status: "draft" })}>↩ Restore to Draft</Button>
+                <Button size="sm" variant="ghost" onClick={() => updateScript(script.id, { status: "draft" })}>↩ Restaurar rascunho</Button>
               )}
             </div>
           </div>
@@ -473,10 +472,10 @@ export default function YouTubePage() {
       {/* Main Tabs */}
       <div className="flex items-center gap-0 border-b border-[var(--line)] overflow-x-auto">
         {([
-          { key: "longform" as const, label: "📹 Long Form" },
-          { key: "shorts" as const, label: "🎬 Shorts" },
-          { key: "performance" as const, label: "📊 Performance" },
-          { key: "outliers" as const, label: "🔥 Outliers" },
+          { key: "longform" as const, label: "📹 Conteúdo longo" },
+          { key: "shorts" as const, label: "🎬 Curtos" },
+          { key: "performance" as const, label: "📊 Desempenho" },
+          { key: "outliers" as const, label: "🔥 Destaques" },
         ]).map(tab => (
           <button
             key={tab.key}
@@ -500,10 +499,10 @@ export default function YouTubePage() {
       {activeView === "shorts" && (
         <div className="flex gap-2 mt-4 mb-2">
           {([
-            { key: "ideas" as const, label: "💡 Ideas", count: ideas.length },
-            { key: "scripts" as const, label: "📜 Scripts", count: draftScripts.length },
-            { key: "tofilm" as const, label: "🎬 To Film", count: tofilmScripts.length },
-            { key: "filmed" as const, label: "✅ Filmed", count: filmedScripts.length },
+            { key: "ideas" as const, label: "💡 Ideias", count: ideas.length },
+            { key: "scripts" as const, label: "📜 Roteiros", count: draftScripts.length },
+            { key: "tofilm" as const, label: "🎬 Para gravar", count: tofilmScripts.length },
+            { key: "filmed" as const, label: "✅ Gravados", count: filmedScripts.length },
           ]).map(tab => (
             <button
               key={tab.key}
@@ -523,17 +522,17 @@ export default function YouTubePage() {
           {/* Sub-tabs */}
           <div className="flex gap-2 mb-4">
             <button onClick={() => setIdeaTab("pending")} className={subPill(ideaTab === "pending")} style={ideaTab === "pending" ? subActiveStyle : undefined}>
-              Pending (<span className="num">{ideas.length}</span>)
+              Pendentes (<span className="num">{ideas.length}</span>)
             </button>
             <button onClick={() => setIdeaTab("rejected")} className={subPill(ideaTab === "rejected")} style={ideaTab === "rejected" ? subActiveStyle : undefined}>
-              Rejected (<span className="num">{rejectedIdeas.length}</span>)
+              Rejeitadas (<span className="num">{rejectedIdeas.length}</span>)
             </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:p-6">
             <div className="lg:col-span-3 space-y-3">
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <p className="text-xs text-[var(--text-3)]">{ideaTab === "pending" ? "Tap to select · hover for ✕ reject" : "Rejected ideas with your feedback"}</p>
+                <p className="text-xs text-[var(--text-3)]">{ideaTab === "pending" ? "Toque para selecionar · passe o mouse para rejeitar ✕" : "Ideias rejeitadas com seu feedback"}</p>
                 {ideaTab === "pending" && (
                   <div className="flex items-center gap-2">
                     {selectedIdeas.size > 0 && (
@@ -547,7 +546,7 @@ export default function YouTubePage() {
                           setSelectedIdeas(new Set());
                           setBatchGenerating(false);
                         }}
-                      >{batchGenerating ? `✨ Generating ${selectedIdeas.size}...` : `Generate ${selectedIdeas.size} Script${selectedIdeas.size > 1 ? "s" : ""}`}</Button>
+                      >{batchGenerating ? `✨ Gerando ${selectedIdeas.size}...` : `Gerar ${selectedIdeas.size} roteiro${selectedIdeas.size > 1 ? "s" : ""}`}</Button>
                     )}
                     <Button size="sm" variant="ghost" disabled={generatingIdeas}
                       onClick={async () => {
@@ -558,7 +557,7 @@ export default function YouTubePage() {
                         } catch { /* empty */ }
                         setGeneratingIdeas(false);
                       }}
-                    >{generatingIdeas ? "✨ Generating..." : "💡 More Ideas"}</Button>
+                    >{generatingIdeas ? "✨ Gerando..." : "💡 Mais ideias"}</Button>
                   </div>
                 )}
               </div>
@@ -628,7 +627,7 @@ export default function YouTubePage() {
                         <p className="text-[10px] mt-1.5" style={{ color: "var(--down)" }}>💬 {idea.rejectedReason}</p>
                       )}
                       {gen && (
-                        <p className="text-[10px] mt-2 font-medium" style={{ color: "var(--accent)" }}>✨ Writing script...</p>
+                        <p className="text-[10px] mt-2 font-medium" style={{ color: "var(--accent)" }}>✨ Escrevendo roteiro...</p>
                       )}
                     </div>
                   </div>
@@ -639,12 +638,12 @@ export default function YouTubePage() {
 
             {/* Preview */}
             <div className="lg:col-span-2">
-              <p className="eyebrow mb-3">Preview</p>
+              <p className="eyebrow mb-3">Prévia</p>
               {generatedScript ? (
                 <ScriptCard script={generatedScript} />
               ) : (
                 <Panel>
-                  <EmptyState icon={<span className="text-3xl">✂️</span>} title="Pick an idea to generate a full script" />
+                  <EmptyState icon={<span className="text-3xl">✂️</span>} title="Escolha uma ideia para gerar um roteiro completo" />
                 </Panel>
               )}
             </div>
@@ -657,16 +656,16 @@ export default function YouTubePage() {
         <div>
           <div className="flex gap-2 mb-4">
             <button onClick={() => setScriptTab("draft")} className={subPill(scriptTab === "draft")} style={scriptTab === "draft" ? subActiveStyle : undefined}>
-              Pending (<span className="num">{draftScripts.length}</span>)
+              Pendentes (<span className="num">{draftScripts.length}</span>)
             </button>
             <button onClick={() => setScriptTab("rejected")} className={subPill(scriptTab === "rejected")} style={scriptTab === "rejected" ? subActiveStyle : undefined}>
-              Rejected (<span className="num">{rejectedScripts.length}</span>)
+              Rejeitados (<span className="num">{rejectedScripts.length}</span>)
             </button>
           </div>
           <div className="space-y-3">
             {(scriptTab === "draft" ? draftScripts : rejectedScripts).length === 0 ? (
               <Panel>
-                <EmptyState title={`No ${scriptTab} scripts`} />
+                <EmptyState title={`Nenhum roteiro ${scriptTab === "draft" ? "em rascunho" : "rejeitado"}`} />
               </Panel>
             ) : (
               (scriptTab === "draft" ? draftScripts : rejectedScripts).map(s => <ScriptCard key={s.id} script={s} compact />)
@@ -680,7 +679,7 @@ export default function YouTubePage() {
         <div className="space-y-3">
           {tofilmScripts.length === 0 ? (
             <Panel>
-              <EmptyState icon={<span className="text-3xl">🎬</span>} title="No scripts queued for filming" hint="Approve scripts to move them here" />
+              <EmptyState icon={<span className="text-3xl">🎬</span>} title="Nenhum roteiro aguardando gravação" hint="Aprove os roteiros para movê-los para cá" />
             </Panel>
           ) : (
             <>
@@ -692,7 +691,7 @@ export default function YouTubePage() {
                   }).join("\n\n---\n\n");
                   navigator.clipboard.writeText(text);
                 }}
-              >📋 Copy All Scripts ({tofilmScripts.length})</Button>
+              >📋 Copiar todos os roteiros ({tofilmScripts.length})</Button>
               <button
                 onClick={async () => {
                   for (const s of tofilmScripts) {
@@ -706,7 +705,7 @@ export default function YouTubePage() {
                 }}
                 className="text-xs px-4 py-2 rounded-[var(--r-md)] font-medium transition-colors ml-2"
                 style={{ color: "var(--up)", background: "color-mix(in srgb, var(--up) 12%, transparent)" }}
-              >✅ Mark All as Filmed ({tofilmScripts.length})</button>
+              >✅ Marcar todos como gravados ({tofilmScripts.length})</button>
               {tofilmScripts.map(s => <ScriptCard key={s.id} script={s} compact />)}
             </>
           )}
@@ -781,10 +780,10 @@ export default function YouTubePage() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {[
-                    { label: "Total Videos", value: perfData.totalVideos.toString() },
-                    { label: "Avg Views", value: fmtNum(perfData.avgViews) },
-                    { label: "Avg Engagement", value: `${perfData.avgEngagement}%` },
-                    { label: "Channel", value: "Your Channel" },
+                    { label: "Vídeos totais", value: perfData.totalVideos.toString() },
+                    { label: "Média de visualizações", value: fmtNum(perfData.avgViews) },
+                    { label: "Média de engajamento", value: `${perfData.avgEngagement}%` },
+                    { label: "Canal", value: "Seu canal" },
                   ].map(s => (
                     <Panel key={s.label} className="p-4">
                       <p className="eyebrow">{s.label}</p>
@@ -798,9 +797,9 @@ export default function YouTubePage() {
                   {/* Content type pills */}
                   <div className="flex items-center gap-1.5 bg-[var(--surface-1)] rounded-[var(--r-md)] border border-[var(--line)] p-1">
                     {([
-                      { key: "all" as const, label: `All (${dateFiltered.length})` },
-                      { key: "longform" as const, label: `📹 Long Form (${longformCount})` },
-                      { key: "shorts" as const, label: `⚡ Shorts (${shortsCount})` },
+                      { key: "all" as const, label: `Todos (${dateFiltered.length})` },
+                      { key: "longform" as const, label: `📹 Conteúdo longo (${longformCount})` },
+                      { key: "shorts" as const, label: `⚡ Curtos (${shortsCount})` },
                     ]).map(t => (
                       <button
                         key={t.key}
@@ -817,13 +816,13 @@ export default function YouTubePage() {
                     onChange={e => setPerfFilter(e.target.value as "all" | "30" | "90")}
                     className="text-xs bg-[var(--surface-1)] border border-[var(--line)] text-[var(--text-2)] rounded-[var(--r-md)] px-3 py-2 cursor-pointer"
                   >
-                    <option value="all">All time</option>
-                    <option value="30">Last 30 days</option>
-                    <option value="90">Last 90 days</option>
+                    <option value="all">Todo o período</option>
+                    <option value="30">Últimos 30 dias</option>
+                    <option value="90">Últimos 90 dias</option>
                   </select>
 
                   <p className="num text-xs text-[var(--text-3)] ml-auto">
-                    Showing {sorted.length} video{sorted.length !== 1 ? "s" : ""}
+                    Exibindo {sorted.length} vídeo{sorted.length !== 1 ? "s" : ""}
                   </p>
                 </div>
 
@@ -833,11 +832,11 @@ export default function YouTubePage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="text-[11px] text-[var(--text-3)] uppercase tracking-wider border-b border-[var(--line)]">
-                          <th className="text-left px-4 py-3 font-medium">Video</th>
-                          <SortTh col="views" label="Views" />
-                          <SortTh col="likes" label="Likes" />
-                          <SortTh col="comments" label="Comments" />
-                          <SortTh col="publishedAt" label="Published" />
+                          <th className="text-left px-4 py-3 font-medium">Vídeo</th>
+                          <SortTh col="views" label="Visualizações" />
+                          <SortTh col="likes" label="Curtidas" />
+                          <SortTh col="comments" label="Comentários" />
+                          <SortTh col="publishedAt" label="Publicado" />
                         </tr>
                       </thead>
                       <tbody>
@@ -879,7 +878,7 @@ export default function YouTubePage() {
               </>
             );
           })() : (
-            <EmptyState title="Failed to load performance data." />
+            <EmptyState title="Falha ao carregar os dados de desempenho." />
           )}
         </div>
       )}

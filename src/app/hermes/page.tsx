@@ -553,10 +553,10 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      setNote(r.ok ? ok : "Request failed.");
+      setNote(r.ok ? ok : "A solicitação falhou.");
       if (r.ok) onDone();
     } catch {
-      setNote("Request failed.");
+      setNote("A solicitação falhou.");
     } finally {
       setBusy(false);
     }
@@ -566,7 +566,7 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
     if (!schedule.trim() || !prompt.trim()) return;
     post(
       { op: "create", schedule: schedule.trim(), prompt: prompt.trim() },
-      "Schedule sent to Hermes."
+      "Agendamento enviado ao Hermes."
     ).then(() => {
       setSchedule("");
       setPrompt("");
@@ -574,7 +574,7 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
   };
   const runNow = () => {
     if (!runName.trim()) return;
-    post({ op: "run", name: runName.trim() }, "Run-now sent to Hermes.").then(() =>
+    post({ op: "run", name: runName.trim() }, "Execução imediata enviada ao Hermes.").then(() =>
       setRunName("")
     );
   };
@@ -582,11 +582,11 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
   return (
     <>
       <SectionHeader
-        label="Cron · schedules"
-        title="Recurring jobs"
+        label="Cron · agendamentos"
+        title="Tarefas recorrentes"
         action={
           <span className="num text-[11px] text-[var(--text-3)]">
-            synced {timeAgo(syncedAt)}
+            sincronizado {timeAgo(syncedAt)}
           </span>
         }
       />
@@ -594,14 +594,14 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
         {/* Schedules */}
         <Panel className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <Eyebrow>schedules</Eyebrow>
+            <Eyebrow>agendamentos</Eyebrow>
             <span className="num text-[10.5px] text-[var(--text-3)]">
               {jobs.length} job{jobs.length === 1 ? "" : "s"}
             </span>
           </div>
           {jobs.length === 0 ? (
             <p className="text-[13px] text-[var(--text-3)] py-6 text-center">
-              No schedules yet.
+              Nenhum agendamento ainda.
             </p>
           ) : (
             <div className="flex flex-col gap-2 max-h-[440px] overflow-auto -mx-1 px-1">
@@ -615,21 +615,21 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
                         <p className="text-[13px] font-medium text-[var(--text)] truncate">{j.name || j.id}</p>
                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 num text-[11px] text-[var(--text-3)]">
                           <span className="text-[var(--text-2)]">{j.schedule}</span>
-                          {j.nextRun && <span>next {timeAgo(j.nextRun)}</span>}
+                          {j.nextRun && <span>próxima execução {timeAgo(j.nextRun)}</span>}
                           {j.deliver && <span>→ {j.deliver.split(":")[0]}</span>}
                           {j.skills && <span>{j.skills}</span>}
                         </div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
-                        <button title="Run now" disabled={busy} onClick={() => post({ op: "run", id: j.id, name: j.name }, "Run-now sent.")} className="p-1.5 rounded-md text-[var(--text-3)] hover:text-[var(--accent)] hover:bg-[var(--surface-1)] transition-colors">
+                        <button title="Executar agora" disabled={busy} onClick={() => post({ op: "run", id: j.id, name: j.name }, "Execução imediata enviada.")} className="p-1.5 rounded-md text-[var(--text-3)] hover:text-[var(--accent)] hover:bg-[var(--surface-1)] transition-colors">
                           <Zap className="w-3.5 h-3.5" />
                         </button>
                         {active ? (
-                          <button title="Pause" disabled={busy} onClick={() => post({ op: "pause", id: j.id, name: j.name }, "Pause sent.")} className="p-1.5 rounded-md text-[var(--text-3)] hover:text-[var(--warn)] hover:bg-[var(--surface-1)] transition-colors">
+                          <button title="Pausar" disabled={busy} onClick={() => post({ op: "pause", id: j.id, name: j.name }, "Pausa enviada.")} className="p-1.5 rounded-md text-[var(--text-3)] hover:text-[var(--warn)] hover:bg-[var(--surface-1)] transition-colors">
                             <Pause className="w-3.5 h-3.5" />
                           </button>
                         ) : (
-                          <button title="Resume" disabled={busy} onClick={() => post({ op: "resume", id: j.id, name: j.name }, "Resume sent.")} className="p-1.5 rounded-md text-[var(--text-3)] hover:text-[var(--up)] hover:bg-[var(--surface-1)] transition-colors">
+                          <button title="Retomar" disabled={busy} onClick={() => post({ op: "resume", id: j.id, name: j.name }, "Retomada enviada.")} className="p-1.5 rounded-md text-[var(--text-3)] hover:text-[var(--up)] hover:bg-[var(--surface-1)] transition-colors">
                             <Play className="w-3.5 h-3.5" />
                           </button>
                         )}
@@ -646,7 +646,7 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
         <Panel className="p-5">
           <div className="space-y-4">
             <div>
-              <Eyebrow className="!mb-2 block">New schedule</Eyebrow>
+              <Eyebrow className="!mb-2 block">Novo agendamento</Eyebrow>
               <div className="space-y-2.5">
                 <input
                   value={schedule}
@@ -658,7 +658,7 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   rows={2}
-                  placeholder="Prompt — what should Hermes do on this cadence?"
+                  placeholder="Comando — o que o Hermes deve fazer nesta frequência?"
                   className="w-full bg-transparent text-[13px] text-[var(--text-2)] placeholder:text-[var(--text-3)] px-3 py-2 rounded-[8px] border border-[var(--line)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] resize-y"
                 />
                 <Button
@@ -668,7 +668,7 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
                   disabled={busy || !schedule.trim() || !prompt.trim()}
                 >
                   <Clock className="w-3.5 h-3.5" />
-                  Create schedule
+                  Criar agendamento
                 </Button>
               </div>
             </div>
@@ -676,18 +676,18 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
             <div className="rule" />
 
             <div>
-              <Eyebrow className="!mb-2 block">Run now</Eyebrow>
+              <Eyebrow className="!mb-2 block">Executar agora</Eyebrow>
               <div className="flex items-center gap-2.5">
                 <input
                   value={runName}
                   onChange={(e) => setRunName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); runNow(); } }}
-                  placeholder="Job name"
+                  placeholder="Nome da tarefa"
                   className="flex-1 min-w-0 bg-transparent text-[13px] text-[var(--text)] placeholder:text-[var(--text-3)] px-3 py-2 rounded-[8px] border border-[var(--line)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                 />
                 <Button variant="ghost" size="sm" onClick={runNow} disabled={busy || !runName.trim()}>
                   <Zap className="w-3.5 h-3.5" />
-                  Run now
+                  Executar agora
                 </Button>
               </div>
             </div>
@@ -709,7 +709,7 @@ function CronPanel({ jobs, syncedAt, onDone }: { jobs: CronJob[]; syncedAt: stri
 function ActivityFeed({ events }: { events: Ev[] }) {
   return (
     <>
-      <SectionHeader label="Activity" title="Recent events" />
+      <SectionHeader label="Atividade" title="Eventos recentes" />
       {events.length === 0 ? (
         <Panel className="p-2">
           <EmptyState
@@ -916,7 +916,7 @@ export default function HermesPage() {
         <section className="mt-12">
           {!loaded ? (
             <>
-              <SectionHeader label="Activity" title="Recent events" />
+              <SectionHeader label="Atividade" title="Eventos recentes" />
               <Skeleton className="h-64" />
             </>
           ) : (

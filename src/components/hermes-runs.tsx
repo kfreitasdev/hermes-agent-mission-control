@@ -119,12 +119,12 @@ const STATUS_TONE: Record<RunStatus, Tone> = {
 };
 const STATUS_LABEL: Record<RunStatus, string> = {
   queued: "Queued",
-  awaiting_approval: "Awaiting approval",
-  approved: "Approved",
-  running: "Running",
-  done: "Done",
-  failed: "Failed",
-  rejected: "Rejected",
+  awaiting_approval: "Aguardando aprovação",
+  approved: "Aprovado",
+  running: "Em execução",
+  done: "Concluído",
+  failed: "Falhou",
+  rejected: "Rejeitado",
 };
 function toneVar(t: Tone): string {
   return t === "neutral" ? "var(--text-3)" : `var(--${t})`;
@@ -303,10 +303,10 @@ function RunRow({ run, reduce }: { run: Req; reduce: boolean }) {
 // ── Run history ───────────────────────────────────────────
 type Filter = "all" | "running" | "done" | "failed";
 const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "running", label: "running" },
-  { key: "done", label: "done" },
-  { key: "failed", label: "failed" },
+  { key: "all", label: "Todos" },
+  { key: "running", label: "em execução" },
+  { key: "done", label: "concluídos" },
+  { key: "failed", label: "falhos" },
 ];
 
 function RunHistory({
@@ -327,8 +327,8 @@ function RunHistory({
   return (
     <>
       <SectionHeader
-        label="Run history"
-        title="Recent runs"
+        label="Histórico de execuções"
+        title="Execuções recentes"
         action={
           <div className="flex items-center gap-1 rounded-lg border border-[var(--line)] p-0.5">
             {FILTERS.map((f) => {
@@ -360,8 +360,8 @@ function RunHistory({
         <Panel className="p-2">
           <EmptyState
             icon={<Activity className="w-6 h-6" />}
-            title={filter === "all" ? "No runs yet" : `No ${filter} runs`}
-            hint="Runs dispatched to Hermes will show up here with duration and results."
+            title={filter === "all" ? "Nenhuma execução ainda" : `Nenhuma execução ${filter}`}
+            hint="As execuções enviadas ao Hermes aparecerão aqui com duração e resultados."
           />
         </Panel>
       ) : (

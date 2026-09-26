@@ -115,10 +115,10 @@ const COLS: {
   icon: typeof Lightbulb;
   accent: string;
 }[] = [
-  { key: "ideas", label: "Ideas", icon: Lightbulb, accent: "var(--warn)" },
-  { key: "approved", label: "Approved", icon: CheckCircle2, accent: "var(--up)" },
-  { key: "scheduled", label: "Scheduled", icon: CalendarClock, accent: "var(--accent)" },
-  { key: "posted", label: "Posted", icon: Send, accent: "var(--accent)" },
+  { key: "ideas", label: "Ideias", icon: Lightbulb, accent: "var(--warn)" },
+  { key: "approved", label: "Aprovadas", icon: CheckCircle2, accent: "var(--up)" },
+  { key: "scheduled", label: "Agendadas", icon: CalendarClock, accent: "var(--accent)" },
+  { key: "posted", label: "Publicadas", icon: Send, accent: "var(--accent)" },
 ];
 
 const CAP = 60; // max cards rendered per column (count in header shows the true total)
@@ -140,7 +140,7 @@ function PipelineCard({ draft }: { draft: Draft }) {
   const views = bestViews(draft);
   const posted = draft.status === "posted";
   const tweetUrl = draft.tweetUrl || draft.postedUrl || null;
-  const preview = draft.text?.trim() || (posted ? "Posted directly on X" : "Untitled draft");
+  const preview = draft.text?.trim() || (posted ? "Publicada diretamente no X" : "Rascunho sem título");
 
   return (
     <div
@@ -212,7 +212,7 @@ function PipelineCard({ draft }: { draft: Draft }) {
                 rel="noopener noreferrer"
                 className="pointer-events-auto num text-[11px] font-medium inline-flex items-center gap-0.5 text-[var(--accent)] hover:brightness-110"
               >
-                View on X
+                Ver no X
                 <ArrowUpRight className="w-3 h-3" strokeWidth={2.25} />
               </a>
             )}
@@ -302,7 +302,7 @@ function TopPerformers({ posted }: { posted: Draft[] }) {
           <EmptyState
             icon={<Trophy className="w-6 h-6" />}
             title="No view data yet"
-            hint="Posted tweets with metrics will rank here — the feedback loop for what to make more of."
+            hint="Publicações com métricas aparecerão aqui — o ciclo de feedback do que vale repetir."
           />
         </Panel>
       ) : (
@@ -310,7 +310,7 @@ function TopPerformers({ posted }: { posted: Draft[] }) {
           <div className="divide-y divide-[var(--line)]">
             {ranked.map((r, i) => {
               const tweetUrl = r.d.tweetUrl || r.d.postedUrl || null;
-              const preview = r.d.text?.trim() || "Posted directly on X";
+              const preview = r.d.text?.trim() || "Publicada diretamente no X";
               return (
                 <div key={r.d.id} className="flex items-start gap-3.5 px-3.5 py-3">
                   <span
@@ -436,18 +436,18 @@ export default function ContentOSPage() {
         {/* Header */}
         <div className="hq-rise pt-4 pb-8 flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <Eyebrow>Content OS</Eyebrow>
+            <Eyebrow>Sistema de conteúdo</Eyebrow>
             <h1 className="mt-2.5 text-[40px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">
-              X Pipeline
+              Pipeline do X
             </h1>
             <p className="mt-3 text-[14px] text-[var(--text-2)]">
-              Every tweet from idea to impact.
+              Cada publicação, da ideia ao resultado.
             </p>
           </div>
           <button
             type="button"
             onClick={manualRefresh}
-            aria-label="Refresh"
+            aria-label="Atualizar"
             className="btn-ghost inline-flex items-center justify-center w-9 h-9"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -456,10 +456,10 @@ export default function ContentOSPage() {
 
         {/* Summary chips */}
         <div className="hq-rise flex flex-wrap gap-3">
-          <StatChip label="In ideas" value={loaded ? String(stats.pending) : "—"} tone="warn" />
-          <StatChip label="Scheduled" value={loaded ? String(stats.scheduled) : "—"} tone="accent" />
-          <StatChip label="Posted this week" value={loaded ? String(stats.postedThisWeek) : "—"} tone="up" />
-          <StatChip label="Views this week" value={loaded ? fmt(stats.viewsThisWeek) : "—"} tone="accent" />
+          <StatChip label="Em ideias" value={loaded ? String(stats.pending) : "—"} tone="warn" />
+          <StatChip label="Agendadas" value={loaded ? String(stats.scheduled) : "—"} tone="accent" />
+          <StatChip label="Publicadas nesta semana" value={loaded ? String(stats.postedThisWeek) : "—"} tone="up" />
+          <StatChip label="Visualizações nesta semana" value={loaded ? fmt(stats.viewsThisWeek) : "—"} tone="accent" />
         </div>
 
         {/* Error */}
@@ -467,11 +467,11 @@ export default function ContentOSPage() {
           <div className="mt-8">
             <Panel className="p-2">
               <EmptyState
-                title="Couldn't load the pipeline"
-                hint={error === "401" ? "Session expired — sign back in." : `Error ${error}. It will retry automatically.`}
+                title="Não foi possível carregar o pipeline"
+                hint={error === "401" ? "Sua sessão expirou — entre novamente." : `Erro ${error}. Tentaremos novamente automaticamente.`}
                 action={
                   <button onClick={manualRefresh} className="btn-ghost px-4 py-2 text-[13px]">
-                    Retry
+                    Tentar novamente
                   </button>
                 }
               />
@@ -481,7 +481,7 @@ export default function ContentOSPage() {
 
         {/* Pipeline board */}
         <section className="mt-12">
-          <SectionHeader label="Pipeline" title="The board" />
+          <SectionHeader label="Pipeline" title="Quadro de conteúdo" />
           {!loaded ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
               {COLS.map((c) => (

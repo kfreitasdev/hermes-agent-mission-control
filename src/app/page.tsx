@@ -85,7 +85,7 @@ function fmt(n: number) {
   }
   return n.toString();
 }
-function fmtExact(n: number) { return n.toLocaleString("en-US"); }
+function fmtExact(n: number) { return n.toLocaleString("pt-BR"); }
 function fmtUsd(n: number, alwaysSign = false) {
   const abs = Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const sign = n >= 0 ? (alwaysSign ? "+" : "") : "-";
@@ -95,16 +95,16 @@ function timeAgo(d: string) {
   const diff = Date.now() - new Date(d).getTime();
   const days = Math.floor(diff / 86400000);
   const hrs  = Math.floor(diff / 3600000);
-  if (days > 0) return `${days}d ago`;
-  if (hrs  > 0) return `${hrs}h ago`;
-  return "just now";
+  if (days > 0) return `${days} d atrás`;
+  if (hrs  > 0) return `${hrs} h atrás`;
+  return "agora mesmo";
 }
 function greeting() {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  if (h < 21) return "Good evening";
-  return "Still up";
+  if (h < 12) return "Bom dia";
+  if (h < 17) return "Boa tarde";
+  if (h < 21) return "Boa noite";
+  return "Ainda acordado";
 }
 
 // Local-dev preview only — never runs in production builds. Lets the full
@@ -160,7 +160,7 @@ function IdeasPanel({ sageDrafts, ytIdeas, buildIdeas }: {
   return (
     <div className="panel flex flex-col p-6 h-full">
       <div className="flex items-center justify-between mb-4">
-        <span className="eyebrow">Top Ideas</span>
+        <span className="eyebrow">Principais ideias</span>
         <div className="flex gap-1 rounded-lg border border-[var(--hq-hairline)] p-0.5">
           {tabs.map(t => (
             <button
@@ -184,7 +184,7 @@ function IdeasPanel({ sageDrafts, ytIdeas, buildIdeas }: {
             <p className="text-[var(--hq-text-dim)] text-[13px] leading-snug line-clamp-1 flex-1 group-hover:text-[var(--hq-text)] transition-colors">{d.text}</p>
             <ChevronRight className="w-3.5 h-3.5 text-[var(--hq-text-ghost)] group-hover:text-[var(--hq-text-dim)] shrink-0 transition-all group-hover:translate-x-0.5" />
           </a>
-        )) : <Empty>No pending drafts.</Empty>)}
+        )) : <Empty>Nenhum rascunho pendente.</Empty>)}
 
         {tab === "youtube" && (ytIdeas.length > 0 ? ytIdeas.map((it, idx) => (
           <a key={idx} href="/youtube" className="group flex gap-3 items-center py-2 border-b border-[var(--hq-hairline)] last:border-0">
@@ -192,7 +192,7 @@ function IdeasPanel({ sageDrafts, ytIdeas, buildIdeas }: {
             <p className="text-[var(--hq-text-dim)] text-[13px] font-medium line-clamp-1 flex-1 group-hover:text-[var(--hq-text)] transition-colors">{it.title}</p>
             <ChevronRight className="w-3.5 h-3.5 text-[var(--hq-text-ghost)] group-hover:text-[var(--hq-text-dim)] shrink-0 transition-all group-hover:translate-x-0.5" />
           </a>
-        )) : <Empty>No YouTube ideas yet.</Empty>)}
+        )) : <Empty>Nenhuma ideia de YouTube ainda.</Empty>)}
 
         {tab === "builds" && (buildIdeas.length > 0 ? buildIdeas.map((it, idx) => (
           <div key={idx} className="flex gap-3 items-center py-2 border-b border-[var(--hq-hairline)] last:border-0">
@@ -207,7 +207,7 @@ function IdeasPanel({ sageDrafts, ytIdeas, buildIdeas }: {
               {it.effort}
             </span>
           </div>
-        )) : <Empty>No build ideas yet.</Empty>)}
+        )) : <Empty>Nenhuma ideia de construção ainda.</Empty>)}
       </div>
     </div>
   );
@@ -223,9 +223,9 @@ function TopTweetsPanel({ tweets }: { tweets: Tweet[] }) {
     <div className="panel flex flex-col p-6 h-full">
       <div className="flex items-center gap-2 mb-4">
         <Twitter className="w-3.5 h-3.5" style={{ color: "#38bdf8" }} />
-        <span className="eyebrow">Top Tweets · 7d</span>
+        <span className="eyebrow">Principais publicações · 7 dias</span>
       </div>
-      {tweets.length === 0 ? <Empty>No tweet data yet</Empty> : (
+      {tweets.length === 0 ? <Empty>Nenhum dado de publicação ainda</Empty> : (
         <div className="space-y-0">
           {tweets.slice(0, 3).map((t, i) => (
             <a key={t.id} href={t.tweetUrl || "/x"} target="_blank" rel="noreferrer"
@@ -234,9 +234,9 @@ function TopTweetsPanel({ tweets }: { tweets: Tweet[] }) {
               <div className="flex-1 min-w-0">
                 {t.text
                   ? <p className="text-[var(--hq-text-dim)] text-[13px] leading-snug line-clamp-2 mb-1.5 group-hover:text-[var(--hq-text)] transition-colors">{t.text}</p>
-                  : <p className="text-[var(--hq-text-ghost)] text-[13px] italic mb-1.5">External tweet</p>}
+                  : <p className="text-[var(--hq-text-ghost)] text-[13px] italic mb-1.5">Publicação externa</p>}
                 <div className="flex items-center gap-3 text-[11px] num">
-                  <span className="text-[var(--hq-text)] font-semibold">{fmt(t.views)}<span className="text-[var(--hq-text-ghost)] font-normal"> views</span></span>
+                  <span className="text-[var(--hq-text)] font-semibold">{fmt(t.views)}<span className="text-[var(--hq-text-ghost)] font-normal"> visualizações</span></span>
                   <span className="text-[var(--hq-text-faint)]">{t.engRate.toFixed(1)}% eng</span>
                   {t.postedAt && <span className="text-[var(--hq-text-ghost)]">{timeAgo(t.postedAt)}</span>}
                 </div>
@@ -258,27 +258,27 @@ function XAnalyticsPanel({ views, trend, totalTweets, bestDay, bestHour }: {
     <div className="panel flex flex-col p-6 h-full">
       <div className="flex items-center gap-2 mb-4">
         <Twitter className="w-3.5 h-3.5" style={{ color: "#38bdf8" }} />
-        <span className="eyebrow">X Analytics</span>
+        <span className="eyebrow">Análises do X</span>
       </div>
       <div className="space-y-4">
         <div>
-          <div className="eyebrow mb-2 !text-[9.5px]">Views · 7d</div>
+          <div className="eyebrow mb-2 !text-[9.5px]">Visualizações · 7 dias</div>
           <div className="num font-semibold text-[40px] leading-[0.95] tracking-[-0.02em] text-[var(--hq-text)]">{fmt(views)}</div>
           {trend.some(v => v > 0) && <Sparkline data={trend} color="#38bdf8" area idSeed="xviews" className="h-9 mt-3" />}
         </div>
         <div className="grid grid-cols-2 gap-3 pt-1">
           <div>
-            <div className="eyebrow mb-1.5 !text-[9.5px]">Tracked</div>
+            <div className="eyebrow mb-1.5 !text-[9.5px]">Monitoradas</div>
             <div className="num font-semibold text-[18px] text-[var(--hq-text)]">{fmtExact(totalTweets)}</div>
           </div>
           <div>
-            <div className="eyebrow mb-1.5 !text-[9.5px]">Best window</div>
+            <div className="eyebrow mb-1.5 !text-[9.5px]">Melhor horário</div>
             <div className="text-[13px] font-medium text-[var(--hq-text-dim)]">{bestDay}<span className="num"> · {bestHour}</span></div>
           </div>
         </div>
       </div>
       <a href="/x" className="mt-auto pt-4 flex items-center gap-1 text-[var(--hq-text-faint)] text-[11px] font-medium hover:text-[var(--hq-text-dim)] transition-colors group">
-        Open X dashboard <ArrowUpRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        Abrir painel do X <ArrowUpRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
       </a>
     </div>
   );
@@ -320,8 +320,8 @@ function YouTubeVideoTabs({ topVideo, latestVideo }: { topVideo: Video | null; l
     <div className="panel flex flex-col overflow-hidden">
       <div className="flex items-center gap-1 p-2 border-b border-[var(--hq-hairline)]">
         <span className="eyebrow ml-2 mr-1" style={{ color: "#f87171" }}>YouTube</span>
-        <Btn k="top" label="Top Performing" />
-        <Btn k="latest" label="Latest" />
+        <Btn k="top" label="Melhor desempenho" />
+        <Btn k="latest" label="Mais recente" />
       </div>
       <a href={video.url} target="_blank" rel="noreferrer" className="group block">
         {video.thumbnail && (
@@ -342,7 +342,7 @@ function AgentsStrip({ processes }: { processes: Process[] }) {
   if (processes.length === 0) return null;
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="eyebrow mr-1">System</span>
+      <span className="eyebrow mr-1">Sistema</span>
       {processes.map((p, i) => (
         <div key={i} className="flex items-center gap-1.5 rounded-lg border border-[var(--hq-hairline)] bg-white/[0.02] px-2.5 py-1.5">
           <span className="relative flex w-1.5 h-1.5">
@@ -371,7 +371,7 @@ function HermesKanbanPanel({ kanban }: { kanban: HermesKanban }) {
     <div className="panel flex flex-col p-6 h-full">
       <div className="flex items-center justify-between mb-4">
         <div className="min-w-0">
-          <span className="eyebrow">Hermes Board</span>
+          <span className="eyebrow">Quadro do Hermes</span>
           <p className="text-[13px] text-[var(--hq-text-dim)] truncate mt-1">{kanban.board}</p>
         </div>
         <span className="num text-[22px] font-semibold text-[var(--hq-text)] shrink-0">{kanban.total}</span>
@@ -388,7 +388,7 @@ function HermesKanbanPanel({ kanban }: { kanban: HermesKanban }) {
         </div>
       )}
 
-      {kanban.tasks.length === 0 ? <Empty>No active tasks.</Empty> : (
+      {kanban.tasks.length === 0 ? <Empty>Nenhuma tarefa ativa.</Empty> : (
         <div className="space-y-0">
           {kanban.tasks.slice(0, 5).map((t) => (
             <div key={t.id} className="flex items-center gap-3 py-2.5 border-b border-[var(--hq-hairline)] last:border-0">
@@ -424,7 +424,7 @@ function ScoreGauge({ score }: { score: ScoreData }) {
         </div>
       </div>
       <div className="hidden sm:block w-[176px]">
-        <div className="eyebrow !text-[9.5px]">Momentum</div>
+        <div className="eyebrow !text-[9.5px]">Ritmo</div>
         <div className="text-[14px] font-semibold mt-0.5 mb-2.5" style={{ color: tier }}>{score.label}</div>
         <div className="space-y-[7px]">
           {comps.map(([k, c]) => {
@@ -490,9 +490,9 @@ export default function Dashboard() {
         <div className="hq-rise pt-4 pb-10 flex flex-wrap items-end justify-between gap-6" style={rise(0)}>
           <div>
             <div className="eyebrow mb-2.5">{greeting()}</div>
-            <h1 className="text-[40px] font-semibold tracking-[-0.025em] leading-none text-[var(--hq-text)]">{process.env.NEXT_PUBLIC_OWNER_NAME || "Founder"}</h1>
+            <h1 className="text-[40px] font-semibold tracking-[-0.025em] leading-none text-[var(--hq-text)]">{process.env.NEXT_PUBLIC_OWNER_NAME || "Fundador"}</h1>
             <p className="num text-[var(--hq-text-ghost)] text-[12.5px] mt-3">
-              {time.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+              {time.toLocaleDateString("pt-BR", { weekday: "long", month: "long", day: "numeric" })}
               {"  ·  "}
               {time.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })}
             </p>
@@ -504,7 +504,7 @@ export default function Dashboard() {
                   style={stale
                     ? { color: "var(--hq-warn)", borderColor: "rgba(251,191,36,0.22)", background: "rgba(251,191,36,0.07)" }
                     : { color: "var(--hq-up)", borderColor: "rgba(52,211,153,0.22)", background: "rgba(52,211,153,0.07)" }}>
-                  <span className="num">{data.daysSincePost === 0 ? "Posted today" : `${data.daysSincePost}d since post`}</span>
+                  <span className="num">{data.daysSincePost === 0 ? "Publicado hoje" : `${data.daysSincePost} d desde a publicação`}</span>
                 </div>
               )}
               <div className="flex items-center gap-1.5 rounded-full border border-[var(--hq-hairline)] bg-white/[0.02] px-2.5 py-1">
@@ -512,7 +512,7 @@ export default function Dashboard() {
                   <span className="absolute inline-flex h-full w-full rounded-full animate-ping" style={{ background: "color-mix(in srgb, var(--up) 60%, transparent)" }} />
                   <span className="relative inline-flex w-1.5 h-1.5 rounded-full" style={{ background: "var(--up)" }} />
                 </span>
-                <span className="eyebrow !text-[9.5px] !text-[var(--hq-text-faint)]">Live</span>
+                <span className="eyebrow !text-[9.5px] !text-[var(--hq-text-faint)]">Ao vivo</span>
               </div>
             </div>
             {score && <ScoreGauge score={score} />}
@@ -524,7 +524,7 @@ export default function Dashboard() {
           {/* X */}
           <div className="flex flex-col gap-5 hq-rise" style={rise(1)}>
             <MetricCard
-              label="X Followers" value={data.xFollowers} format={fmtExact}
+              label="Seguidores do X" value={data.xFollowers} format={fmtExact}
               delta={xd.delta} deltaPct={xd.deltaPct} deltaLabel={xd.label} trend={xd.series}
               goal={data.xGoal} goalFormat={fmt}
               icon={<Twitter className="w-4 h-4" />} accent="#38bdf8" href="/x" loaded={loaded}
@@ -534,7 +534,7 @@ export default function Dashboard() {
           {/* YouTube */}
           <div className="flex flex-col gap-5 hq-rise" style={rise(2)}>
             <MetricCard
-              label="YouTube Subscribers" value={data.ytSubscribers} format={fmtExact}
+              label="Inscritos no YouTube" value={data.ytSubscribers} format={fmtExact}
               delta={ytd.delta} deltaPct={ytd.deltaPct} deltaLabel={ytd.label} trend={ytd.series}
               goal={data.ytGoal} goalFormat={fmt}
               icon={<Youtube className="w-4 h-4" />} accent="#f87171" href="/youtube" loaded={loaded}
@@ -560,7 +560,7 @@ export default function Dashboard() {
 
         {/* ── Signal ──────────────────────────────────────── */}
         <div className="mt-14">
-          <SectionLabel>Signal</SectionLabel>
+          <SectionLabel>Sinais</SectionLabel>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <div className="hq-rise" style={rise(4)}><TopTweetsPanel tweets={data.topTweets} /></div>
             <div className="hq-rise" style={rise(5)}><IdeasPanel sageDrafts={data.topSageDrafts} ytIdeas={data.topYoutubeIdeas} buildIdeas={data.topBuildIdeas} /></div>

@@ -40,12 +40,12 @@ const TONE: Record<string, "neutral" | "up" | "down" | "warn" | "accent"> = {
 };
 const LABEL: Record<string, string> = {
   queued: "Queued",
-  awaiting_approval: "Awaiting approval",
-  approved: "Approved",
-  running: "Running",
-  done: "Done",
-  failed: "Failed",
-  rejected: "Rejected",
+  awaiting_approval: "Aguardando aprovação",
+  approved: "Aprovado",
+  running: "Em execução",
+  done: "Concluído",
+  failed: "Falhou",
+  rejected: "Rejeitado",
 };
 
 export function HermesDispatches() {
@@ -68,15 +68,15 @@ export function HermesDispatches() {
 
   return (
     <div>
-      <SectionHeader label="Dispatches" title="What you've sent Hermes" />
+      <SectionHeader label="Solicitações" title="O que você enviou ao Hermes" />
       {!loaded ? (
         <Panel><div className="sk h-24 m-1 rounded-[10px]" /></Panel>
       ) : reqs.length === 0 ? (
         <Panel>
           <EmptyState
             icon={<Send className="w-5 h-5" />}
-            title="No dispatches yet"
-            hint="Send a task with ⌘K or the bar above — it'll appear here with its live status and result."
+            title="Nenhuma solicitação ainda"
+            hint="Envie uma tarefa com ⌘K ou pela barra acima — ela aparecerá aqui com status e resultado em tempo real."
           />
         </Panel>
       ) : (

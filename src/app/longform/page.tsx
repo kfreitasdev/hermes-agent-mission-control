@@ -168,8 +168,8 @@ export default function LongFormPage() {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setRejectModal(null)}>
         <div dir="ltr" className="panel p-5 w-full max-w-md" onClick={e => e.stopPropagation()}>
-          <h3 className="text-sm font-semibold text-[var(--text)] mb-1">Reject: {rejectModal.title}</h3>
-          <p className="text-xs text-[var(--text-3)] mb-3">Why? This helps improve future scripts.</p>
+          <h3 className="text-sm font-semibold text-[var(--text)] mb-1">Rejeitar: {rejectModal.title}</h3>
+          <p className="text-xs text-[var(--text-3)] mb-3">Por quê? Isso ajuda a melhorar os próximos roteiros.</p>
           <textarea
             ref={rejectRef}
             suppressHydrationWarning
@@ -185,8 +185,8 @@ export default function LongFormPage() {
                 setRejectModal(null);
               }}
               className={`flex-1 text-sm py-2 rounded-[var(--r-md)] ${TONE.down} transition-colors font-medium`}
-            >Reject</button>
-            <button onClick={() => setRejectModal(null)} className={`flex-1 text-sm py-2 rounded-[var(--r-md)] ${TONE.ghost} transition-colors`}>Cancel</button>
+            >Rejeitar</button>
+            <button onClick={() => setRejectModal(null)} className={`flex-1 text-sm py-2 rounded-[var(--r-md)] ${TONE.ghost} transition-colors`}>Cancelar</button>
           </div>
         </div>
       </div>
@@ -238,12 +238,12 @@ export default function LongFormPage() {
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setPostModal(null)}>
         <div dir="ltr" className="panel p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-sm font-semibold text-[var(--text)] mb-1">Mark as Posted</h3>
+          <h3 className="text-sm font-semibold text-[var(--text)] mb-1">Marcar como publicado</h3>
           <p className="text-xs text-[var(--text-3)] mb-4">{postModal.title}</p>
 
           <div className="space-y-3">
             <div>
-              <label className="eyebrow mb-1 block">YouTube URL *</label>
+              <label className="eyebrow mb-1 block">URL do YouTube *</label>
               <div className="flex gap-2">
                 <input
                   type="url"
@@ -257,18 +257,18 @@ export default function LongFormPage() {
                   onClick={() => scrapeYoutube(postForm.youtubeUrl)}
                   disabled={scraping || !postForm.youtubeUrl}
                   className={`px-3 py-2 rounded-[var(--r-md)] ${TONE.accent} text-xs font-medium disabled:opacity-40 transition-colors whitespace-nowrap`}
-                >{scraping ? "Scraping..." : "Fetch"}</button>
+                >{scraping ? "Buscando..." : "Buscar"}</button>
               </div>
               {scrapeError && <p className="text-xs text-[var(--down)] mt-1">{scrapeError}</p>}
-              {scraped && <p className="text-xs text-[var(--up)] mt-1">Auto-filled from YouTube</p>}
+              {scraped && <p className="text-xs text-[var(--up)] mt-1">Preenchido automaticamente pelo YouTube</p>}
             </div>
 
             <div>
-              <label className="eyebrow mb-1 block">Video Title</label>
+              <label className="eyebrow mb-1 block">Título do vídeo</label>
               <input
                 value={postForm.finalTitle}
                 onChange={e => setPostForm(f => ({ ...f, finalTitle: e.target.value }))}
-                placeholder="Auto-filled from YouTube"
+                placeholder="Preenchido automaticamente pelo YouTube"
                 className={`w-full ${INPUT} p-3 text-sm`}
               />
             </div>
@@ -285,7 +285,7 @@ export default function LongFormPage() {
               <textarea
                 value={postForm.finalScript}
                 onChange={e => setPostForm(f => ({ ...f, finalScript: e.target.value }))}
-                placeholder="Auto-filled from YouTube captions..."
+                placeholder="Preenchido automaticamente pelas legendas do YouTube..."
                 className={`w-full ${INPUT} p-3 text-sm resize-none h-32`}
               />
             </div>
@@ -307,7 +307,7 @@ export default function LongFormPage() {
               disabled={!postForm.youtubeUrl}
               className={`flex-1 text-sm py-2 rounded-[var(--r-md)] ${TONE.accent} transition-colors font-medium disabled:opacity-40`}
             >Post</button>
-            <button onClick={() => setPostModal(null)} className={`flex-1 text-sm py-2 rounded-[var(--r-md)] ${TONE.ghost} transition-colors`}>Cancel</button>
+            <button onClick={() => setPostModal(null)} className={`flex-1 text-sm py-2 rounded-[var(--r-md)] ${TONE.ghost} transition-colors`}>Cancelar</button>
           </div>
         </div>
       </div>
@@ -339,10 +339,10 @@ export default function LongFormPage() {
                 className={`text-sm font-semibold flex-1 pr-2 ${INPUT} px-2 py-1`}
               />
             ) : (
-              <span onClick={() => { if (script.status !== "posted") setEditingTitle(true); }} className={`text-sm font-semibold text-[var(--text)] flex-1 pr-2 ${script.status !== "posted" ? "cursor-pointer hover:text-[var(--accent)]" : ""}`} title={script.status !== "posted" ? "Click to edit title" : ""}>{script.title}</span>
+              <span onClick={() => { if (script.status !== "posted") setEditingTitle(true); }} className={`text-sm font-semibold text-[var(--text)] flex-1 pr-2 ${script.status !== "posted" ? "cursor-pointer hover:text-[var(--accent)]" : ""}`} title={script.status !== "posted" ? "Clique para editar o título" : ""}>{script.title}</span>
             )}
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--line)] text-[var(--text-2)]">{(script.type || "article") === "video" ? "🎬 Video" : "📝 Article"}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--line)] text-[var(--text-2)]">{(script.type || "article") === "video" ? "🎬 Vídeo" : "📝 Artigo"}</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full border border-[var(--line)] text-[var(--text-3)] num">{script.targetLength}</span>
             </div>
           </div>
@@ -366,8 +366,8 @@ export default function LongFormPage() {
               }}
             >
               <p className="text-[11px] text-[var(--text-2)]">
-                <span className="font-medium text-[var(--text)]">{script.factCheck.status} Fact Check</span>
-                {script.factCheck.verified?.length > 0 && <span className="text-[var(--up)] ml-1 num">— {script.factCheck.verified.length} verified</span>}
+                <span className="font-medium text-[var(--text)]">{script.factCheck.status} Verificação de fatos</span>
+                {script.factCheck.verified?.length > 0 && <span className="text-[var(--up)] ml-1 num">— {script.factCheck.verified.length} verificadas</span>}
               </p>
               {script.factCheck.issues?.length > 0 && (
                 <div className="mt-1 space-y-0.5">
@@ -398,7 +398,7 @@ export default function LongFormPage() {
               className="flex items-center gap-2 text-xs text-[var(--text-3)] hover:text-[var(--text-2)] transition-colors"
             >
               <span>{isOutlineExpanded ? "▴" : "▾"}</span>
-              <span className="font-medium uppercase tracking-wider">Outline</span>
+              <span className="font-medium uppercase tracking-wider">Estrutura</span>
             </button>
             {isOutlineExpanded && (
               <div className="mt-2 bg-[var(--surface-2)] rounded-[var(--r-md)] p-3">
@@ -407,14 +407,14 @@ export default function LongFormPage() {
             )}
           </div>
 
-          {/* Full Script (collapsible) */}
+          {/* Roteiro completo (collapsible) */}
           <div className="mb-3">
             <button
               onClick={() => setExpandedScript(isExpanded ? null : script.id)}
               className="flex items-center gap-2 text-xs text-[var(--text-3)] hover:text-[var(--text-2)] transition-colors"
             >
               <span>{isExpanded ? "▴" : "▾"}</span>
-              <span className="font-medium uppercase tracking-wider">Full Script</span>
+              <span className="font-medium uppercase tracking-wider">Roteiro completo</span>
             </button>
             {isExpanded && script.fullScript && (
               <div className="mt-2 bg-[var(--surface-2)] rounded-[var(--r-md)] p-5 border border-[var(--line)] max-h-[70vh] overflow-y-auto">
@@ -438,13 +438,13 @@ export default function LongFormPage() {
 
           {/* Notes */}
           <div className="mb-3">
-            <p className="eyebrow mb-1">Notes</p>
+            <p className="eyebrow mb-1">Notas</p>
             <textarea
               suppressHydrationWarning
               value={notesValue}
               onChange={e => setNotesValue(e.target.value)}
               onBlur={() => { if (notesValue !== script.notes) updateScript(script.id, { notes: notesValue }); }}
-              placeholder="Filming notes..."
+              placeholder="Notas de gravação..."
               className={`w-full ${INPUT} p-2 text-xs text-[var(--text-2)] resize-none h-16`}
             />
           </div>
@@ -454,7 +454,7 @@ export default function LongFormPage() {
             <button
               onClick={() => copySpokenText(script)}
               className={`${BTN_BASE} ${TONE.ghost}`}
-            >Copy Full Script</button>
+            >Copiar roteiro completo</button>
 
             {script.status === "draft" && !script.fullScript && (
               <>
@@ -462,15 +462,15 @@ export default function LongFormPage() {
                   onClick={() => approveAndGenerate(script.id, script.title, script.hook)}
                   disabled={generatingId === script.id}
                   className={`${BTN_BASE} ${TONE.up} disabled:opacity-50`}
-                >{generatingId === script.id ? "Generating..." : "Approve & Generate Script"}</button>
+                >{generatingId === script.id ? "Gerando..." : "Aprovar e gerar roteiro"}</button>
                 <button
                   onClick={() => setTweakOpen(!tweakOpen)}
                   className={`${BTN_BASE} ${TONE.warn}`}
-                >Tweak</button>
+                >Ajustar</button>
                 <button
                   onClick={() => setRejectModal({ id: script.id, title: script.title })}
                   className={`${BTN_BASE} ${TONE.down}`}
-                >Reject</button>
+                >Rejeitar</button>
               </>
             )}
             {script.status === "draft" && script.fullScript && (
@@ -478,11 +478,11 @@ export default function LongFormPage() {
                 <button
                   onClick={() => updateScript(script.id, { status: "approved" })}
                   className={`${BTN_BASE} ${TONE.up}`}
-                >Approve Script</button>
+                >Aprovar roteiro</button>
                 <button
                   onClick={() => setRejectModal({ id: script.id, title: script.title })}
                   className={`${BTN_BASE} ${TONE.down}`}
-                >Reject</button>
+                >Rejeitar</button>
               </>
             )}
 
@@ -491,19 +491,19 @@ export default function LongFormPage() {
                 <button
                   onClick={() => updateScript(script.id, { status: "tofilm" })}
                   className={`${BTN_BASE} ${TONE.accent}`}
-                >Ready to Film</button>
+                >Pronto para gravar</button>
                 <button
                   onClick={() => setTweakOpen(!tweakOpen)}
                   className={`${BTN_BASE} ${TONE.warn}`}
-                >Tweak</button>
+                >Ajustar</button>
                 <button
                   onClick={() => setRejectModal({ id: script.id, title: script.title })}
                   className={`${BTN_BASE} ${TONE.down}`}
-                >Reject</button>
+                >Rejeitar</button>
                 <button
                   onClick={() => updateScript(script.id, { status: "draft" })}
                   className={`${BTN_BASE} ${TONE.ghost}`}
-                >↩ Back to Ideas</button>
+                >↩ Voltar para ideias</button>
               </>
             )}
 
@@ -512,15 +512,15 @@ export default function LongFormPage() {
                 <button
                   onClick={() => updateScript(script.id, { status: "filmed" })}
                   className={`${BTN_BASE} ${TONE.accent}`}
-                >Filmed</button>
+                >Gravado</button>
                 <button
                   onClick={() => setRejectModal({ id: script.id, title: script.title })}
                   className={`${BTN_BASE} ${TONE.down}`}
-                >Reject</button>
+                >Rejeitar</button>
                 <button
                   onClick={() => updateScript(script.id, { status: "approved" })}
                   className={`${BTN_BASE} ${TONE.ghost}`}
-                >↩ Back to Scripts</button>
+                >↩ Voltar para roteiros</button>
               </>
             )}
 
@@ -529,11 +529,11 @@ export default function LongFormPage() {
                 <button
                   onClick={() => { setPostModal({ id: script.id, title: script.title }); setPostForm({ youtubeUrl: "", finalTitle: script.title, finalScript: script.fullScript || "", thumbnailUrl: "" }); }}
                   className={`${BTN_BASE} ${TONE.accent}`}
-                >Mark as Posted</button>
+                >Marcar como publicado</button>
                 <button
                   onClick={() => updateScript(script.id, { status: "tofilm" })}
                   className={`${BTN_BASE} ${TONE.ghost}`}
-                >↩ Back to To Film</button>
+                >↩ Voltar para prontos para gravar</button>
               </>
             )}
 
@@ -541,21 +541,21 @@ export default function LongFormPage() {
               <button
                 onClick={() => updateScript(script.id, { status: "filmed" })}
                 className={`${BTN_BASE} ${TONE.ghost}`}
-              >↩ Back to Filmed</button>
+              >↩ Voltar para gravados</button>
             )}
 
             {script.status === "rejected" && (
               <button
                 onClick={() => updateScript(script.id, { status: "draft" })}
                 className={`${BTN_BASE} ${TONE.ghost}`}
-              >↩ Restore to Draft</button>
+              >↩ Restaurar como rascunho</button>
             )}
           </div>
 
           {/* Tweak request panel */}
           {tweakOpen && (
             <div className="mt-3 bg-[color-mix(in_srgb,var(--warn)_6%,transparent)] border border-[color-mix(in_srgb,var(--warn)_22%,transparent)] rounded-[var(--r-md)] p-3">
-              <p className="eyebrow mb-2" style={{ color: "var(--warn)" }}>Send tweak to Nova</p>
+              <p className="eyebrow mb-2" style={{ color: "var(--warn)" }}>Enviar ajuste para Nova</p>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -587,8 +587,8 @@ export default function LongFormPage() {
                   }}
                   disabled={!tweakMsg.trim() || tweaking}
                   className={`px-4 py-2 rounded-[var(--r-md)] text-xs font-medium transition-colors ${tweakMsg.trim() && !tweaking ? TONE.warn : "bg-[var(--surface-2)] text-[var(--text-4)] cursor-not-allowed"}`}
-                >{tweaking ? "Sending..." : "Send"}</button>
-                <button onClick={() => { setTweakOpen(false); setTweakMsg(""); }} className="px-3 py-2 rounded-[var(--r-md)] text-xs text-[var(--text-2)] hover:bg-[var(--surface-2)] transition-colors">Cancel</button>
+                >{tweaking ? "Enviando..." : "Send"}</button>
+                <button onClick={() => { setTweakOpen(false); setTweakMsg(""); }} className="px-3 py-2 rounded-[var(--r-md)] text-xs text-[var(--text-2)] hover:bg-[var(--surface-2)] transition-colors">Cancelar</button>
               </div>
             </div>
           )}
@@ -639,7 +639,7 @@ export default function LongFormPage() {
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-semibold text-[var(--text)] flex-1 pr-2">{script.title}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--accent)_22%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]">Posted</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full border border-[color-mix(in_srgb,var(--accent)_22%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]">Publicado</span>
           </div>
 
           {/* Hook preview */}
@@ -659,7 +659,7 @@ export default function LongFormPage() {
                     onChange={e => setYtUrl(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") saveYt(); if (e.key === "Escape") { setYtUrl(script.youtubeUrl || ""); setEditingYt(false); } }}
                     autoFocus
-                    placeholder="YouTube URL..."
+                    placeholder="URL do YouTube..."
                     className={`flex-1 ${INPUT} px-3 py-1.5 text-xs`}
                   />
                   <button onClick={saveYt} className="text-xs text-[var(--up)] hover:opacity-80">✓</button>
@@ -670,9 +670,9 @@ export default function LongFormPage() {
                   {ytUrl ? (
                     <a href={ytUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs text-[var(--accent)] hover:opacity-80 truncate">{ytUrl}</a>
                   ) : (
-                    <span className="flex-1 text-xs text-[var(--text-4)]">No YouTube URL</span>
+                    <span className="flex-1 text-xs text-[var(--text-4)]">Sem URL do YouTube</span>
                   )}
-                  <button onClick={() => setEditingYt(true)} className="text-[10px] px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">Edit</button>
+                  <button onClick={() => setEditingYt(true)} className="text-[10px] px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">Editar</button>
                 </>
               )}
             </div>
@@ -686,7 +686,7 @@ export default function LongFormPage() {
                     onChange={e => setTwUrl(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") saveTw(); if (e.key === "Escape") { setTwUrl(script.tweetUrl || ""); setEditingTw(false); } }}
                     autoFocus
-                    placeholder="Tweet URL..."
+                    placeholder="URL da publicação..."
                     className={`flex-1 ${INPUT} px-3 py-1.5 text-xs`}
                   />
                   <button onClick={saveTw} className="text-xs text-[var(--up)] hover:opacity-80">✓</button>
@@ -697,9 +697,9 @@ export default function LongFormPage() {
                   {twUrl ? (
                     <a href={twUrl} target="_blank" rel="noopener noreferrer" className="flex-1 text-xs text-[var(--accent)] hover:opacity-80 truncate">{twUrl}</a>
                   ) : (
-                    <span className="flex-1 text-xs text-[var(--text-4)]">No Tweet URL</span>
+                    <span className="flex-1 text-xs text-[var(--text-4)]">Sem URL da publicação</span>
                   )}
-                  <button onClick={() => setEditingTw(true)} className="text-[10px] px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">Edit</button>
+                  <button onClick={() => setEditingTw(true)} className="text-[10px] px-2 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">Editar</button>
                 </>
               )}
             </div>
@@ -712,15 +712,15 @@ export default function LongFormPage() {
               <p className="eyebrow mb-2">▶ YouTube</p>
               <div className="space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Views</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Visualizações</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{script.youtubeViews?.toLocaleString() ?? "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Likes</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Curtidas</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{script.youtubeLikes?.toLocaleString() ?? "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Comments</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Comentários</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{script.youtubeComments?.toLocaleString() ?? "—"}</span>
                 </div>
               </div>
@@ -730,23 +730,23 @@ export default function LongFormPage() {
               <p className="eyebrow mb-2">𝕏 Twitter</p>
               <div className="space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Views</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Visualizações</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{(script as any).tweetViews?.toLocaleString() ?? "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Likes</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Curtidas</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{script.tweetLikes?.toLocaleString() ?? "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Bookmarks</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Salvamentos</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{script.tweetBookmarks?.toLocaleString() ?? "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Retweets</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Republicações</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{(script as any).tweetRetweets?.toLocaleString() ?? "—"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[11px] text-[var(--text-3)]">Replies</span>
+                  <span className="text-[11px] text-[var(--text-3)]">Respostas</span>
                   <span className="text-[11px] text-[var(--text)] font-medium num">{(script as any).tweetReplies?.toLocaleString() ?? "—"}</span>
                 </div>
               </div>
@@ -760,12 +760,12 @@ export default function LongFormPage() {
                 onClick={() => scrapeAndUpdate()}
                 disabled={refreshing}
                 className={`${BTN_BASE} ${TONE.accent} disabled:opacity-40`}
-              >{refreshing ? "Fetching..." : "Refresh Metrics"}</button>
+              >{refreshing ? "Fetching..." : "Atualizar métricas"}</button>
             )}
             <button
               onClick={() => updateScript(script.id, { status: "filmed" } as any)}
               className={`${BTN_BASE} ${TONE.ghost}`}
-            >↩ Back to Filmed</button>
+            >↩ Voltar para gravados</button>
           </div>
         </div>
       </div>
@@ -781,7 +781,7 @@ export default function LongFormPage() {
       <div className="flex items-center gap-3">
         <span className="text-2xl">📹</span>
         <div>
-          <h1 className="text-xl font-semibold text-[var(--text)]">Long Form</h1>
+          <h1 className="text-xl font-semibold text-[var(--text)]">Conteúdo longo</h1>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-[9px] px-2 py-0.5 rounded-full border border-[var(--line)] text-[var(--text-2)]">▶ YouTube</span>
             <span className="text-[9px] px-2 py-0.5 rounded-full border border-[var(--line)] text-[var(--text-2)]">𝕏 Twitter</span>
@@ -799,7 +799,7 @@ export default function LongFormPage() {
             onClick={() => setTypeFilter(t)}
             className={`text-xs px-3 py-1 rounded-full transition-colors ${typeFilter === t ? "border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]" : "text-[var(--text-3)] hover:text-[var(--text-2)] border border-[var(--line)]"}`}
           >
-            {t === "all" ? "All" : t === "article" ? "📝 Articles" : "🎬 Videos"}
+            {t === "all" ? "All" : t === "article" ? "📝 Articles" : "🎬 Vídeos"}
           </button>
         ))}
       </div>
@@ -835,7 +835,7 @@ export default function LongFormPage() {
                 {(["article", "video"] as const).map(t => (
                   <button key={t} onClick={() => setNewType(t)}
                     className={`text-xs px-2 py-0.5 rounded transition-colors ${newType === t ? "bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]" : "text-[var(--text-4)] hover:text-[var(--text-2)]"}`}
-                  >{t === "article" ? "📝 Article" : "🎬 Video"}</button>
+                  >{t === "article" ? "📝 Article" : "🎬 Vídeo"}</button>
                 ))}
               </div>
             </div>
@@ -854,7 +854,7 @@ export default function LongFormPage() {
                 onClick={generateScript}
                 disabled={generating || !topicInput.trim()}
                 className="btn-primary text-xs px-4 py-2 font-medium disabled:opacity-50 whitespace-nowrap"
-              >{generating ? "Generating..." : "Generate Script"}</button>
+              >{generating ? "Gerando..." : "Gerar roteiro"}</button>
             </div>
           </div>
 
@@ -875,7 +875,7 @@ export default function LongFormPage() {
                 {rejectedScripts.length > 0 && (
                   <details className="mt-4">
                     <summary className="text-xs text-[var(--text-3)] cursor-pointer hover:text-[var(--text-2)] transition-colors">
-                      Rejected (<span className="num">{rejectedScripts.length}</span>) ›
+                      Rejeitados (<span className="num">{rejectedScripts.length}</span>) ›
                     </summary>
                     <div className="mt-2">
                       {rejectedScripts.map(s => <ScriptCard key={s.id} script={s} compact />)}

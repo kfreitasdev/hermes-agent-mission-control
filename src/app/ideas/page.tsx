@@ -20,20 +20,20 @@ interface Idea {
 type Tone = "neutral" | "up" | "down" | "warn" | "accent";
 
 const STATUS_CONFIG: Record<string, { label: string; tone: Tone }> = {
-  new:           { label: "New",         tone: "accent" },
-  considering:   { label: "Considering", tone: "warn" },
-  approved:      { label: "Approved",    tone: "up" },
-  "in-progress": { label: "In Progress", tone: "accent" },
-  done:          { label: "Done",        tone: "up" },
-  rejected:      { label: "Rejected",    tone: "down" },
+  new:           { label: "Nova",        tone: "accent" },
+  considering:   { label: "Em análise",  tone: "warn" },
+  approved:      { label: "Aprovada",    tone: "up" },
+  "in-progress": { label: "Em andamento", tone: "accent" },
+  done:          { label: "Concluída",   tone: "up" },
+  rejected:      { label: "Rejeitada",    tone: "down" },
 };
 
 const CATEGORY_CONFIG: Record<string, { label: string }> = {
-  build:      { label: "Build" },
-  content:    { label: "Content" },
-  feature:    { label: "Feature" },
+  build:      { label: "Construção" },
+  content:    { label: "Conteúdo" },
+  feature:    { label: "Funcionalidade" },
   thread:     { label: "Thread" },
-  experiment: { label: "Experiment" },
+  experiment: { label: "Experimento" },
 };
 
 const inputCls =
@@ -46,10 +46,10 @@ function formatDate(dateStr?: string) {
     const now = new Date();
     const diff = now.getTime() - d.getTime();
     const days = Math.floor(diff / 86400000);
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days}d ago`;
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    if (days === 0) return "Hoje";
+    if (days === 1) return "Ontem";
+    if (days < 7) return `há ${days}d`;
+    return d.toLocaleDateString("pt-BR", { month: "short", day: "numeric" });
   } catch { return ""; }
 }
 
@@ -105,7 +105,7 @@ function IdeaCard({ idea, onUpdate }: { idea: Idea; onUpdate: () => void }) {
         </div>
       </div>
 
-      {/* Title + description */}
+      {/* Título + descrição */}
       <h3 className="text-[14px] font-semibold text-[var(--text)] mb-1.5 leading-snug">{idea.title}</h3>
       <p className="text-[var(--text-2)] text-[13px] leading-relaxed mb-4">{idea.description}</p>
 
@@ -119,12 +119,12 @@ function IdeaCard({ idea, onUpdate }: { idea: Idea; onUpdate: () => void }) {
           }}
         >
           <p className="text-[12px]" style={{ color: "var(--down)" }}>
-            <span className="font-medium">Rejected:</span> {idea.rejectionReason}
+            <span className="font-medium">Rejeitada:</span> {idea.rejectionReason}
           </p>
         </div>
       )}
 
-      {/* Source */}
+      {/* Fonte */}
       {idea.source && idea.source !== "manual" && (
         <p className="text-[var(--text-4)] text-[11px] num mb-3">via {idea.source}</p>
       )}
@@ -138,7 +138,7 @@ function IdeaCard({ idea, onUpdate }: { idea: Idea; onUpdate: () => void }) {
             style={{ color: "var(--up)", borderColor: "color-mix(in srgb, var(--up) 24%, transparent)" }}
           >
             <Check className="w-3 h-3" />
-            Approve
+            Aprovar
           </button>
           <button
             onClick={() => setIsRejecting(true)}
@@ -146,7 +146,7 @@ function IdeaCard({ idea, onUpdate }: { idea: Idea; onUpdate: () => void }) {
             style={{ color: "var(--down)", borderColor: "color-mix(in srgb, var(--down) 24%, transparent)" }}
           >
             <X className="w-3 h-3" />
-            Reject
+            Rejeitar
           </button>
         </div>
       )}
@@ -154,11 +154,11 @@ function IdeaCard({ idea, onUpdate }: { idea: Idea; onUpdate: () => void }) {
       {isApproved && (
         <div className="flex items-center gap-1.5 text-[12px]" style={{ color: "var(--up)" }}>
           <Check className="w-3 h-3" />
-          <span>Approved</span>
+          <span>Aprovada</span>
         </div>
       )}
 
-      {/* Reject input */}
+      {/* Rejeitar input */}
       {isRejecting && (
         <div className="flex gap-2">
           <input
@@ -166,7 +166,7 @@ function IdeaCard({ idea, onUpdate }: { idea: Idea; onUpdate: () => void }) {
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleReject()}
-            placeholder="Why reject? (helps Sage learn)"
+            placeholder="Por que rejeitar? (ajuda o Sage a aprender)"
             className="flex-1 bg-[var(--surface-2)] border rounded-full px-3 py-2 text-[13px] text-[var(--text)] placeholder:text-[var(--text-3)] focus:outline-none transition-colors"
             style={{ borderColor: "color-mix(in srgb, var(--down) 28%, transparent)" }}
             autoFocus
@@ -177,13 +177,13 @@ function IdeaCard({ idea, onUpdate }: { idea: Idea; onUpdate: () => void }) {
             className="px-3 py-2 rounded-full text-[12px] font-medium border transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ color: "var(--down)", borderColor: "color-mix(in srgb, var(--down) 28%, transparent)" }}
           >
-            Reject
+            Rejeitar
           </button>
           <button
             onClick={() => { setIsRejecting(false); setRejectReason(""); }}
             className="px-3 py-2 rounded-full text-[12px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors"
           >
-            Cancel
+            Cancelar
           </button>
         </div>
       )}
@@ -245,11 +245,11 @@ export default function IdeasPage() {
   const uniqueCategories = [...new Set(ideas.map(i => i.category).filter(Boolean))];
 
   const statusTabs = [
-    { key: "active", label: "Active", count: ideas.filter(i => !["rejected","done"].includes(i.status)).length },
-    { key: "all", label: "All", count: ideas.length },
-    { key: "approved", label: "Approved", count: ideas.filter(i => i.status === "approved").length },
-    { key: "done", label: "Done", count: ideas.filter(i => i.status === "done").length },
-    { key: "rejected", label: "Rejected", count: ideas.filter(i => i.status === "rejected").length },
+    { key: "active", label: "Ativas", count: ideas.filter(i => !["rejected","done"].includes(i.status)).length },
+    { key: "all", label: "Todas", count: ideas.length },
+    { key: "approved", label: "Aprovadas", count: ideas.filter(i => i.status === "approved").length },
+    { key: "done", label: "Concluídas", count: ideas.filter(i => i.status === "done").length },
+    { key: "rejected", label: "Rejeitadas", count: ideas.filter(i => i.status === "rejected").length },
   ];
 
   if (loading) {
@@ -282,24 +282,24 @@ export default function IdeasPage() {
         <div>
           <div className="eyebrow mb-2.5 flex items-center gap-1.5">
             <Lightbulb className="w-3.5 h-3.5" />
-            Ideas
+            Ideias
           </div>
-          <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Idea Board</h1>
-          <p className="num text-[var(--text-4)] text-[12px] mt-3">{filtered.length} showing · {ideas.length} total</p>
+          <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Quadro de ideias</h1>
+          <p className="num text-[var(--text-4)] text-[12px] mt-3">{filtered.length} exibidas · {ideas.length} no total</p>
         </div>
         <Button
           variant={showForm ? "ghost" : "primary"}
           onClick={() => setShowForm(!showForm)}
         >
           {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-          {showForm ? "Cancel" : "Add Idea"}
+          {showForm ? "Cancelar" : "Adicionar ideia"}
         </Button>
       </div>
 
       {/* Add Idea Form */}
       {showForm && (
         <div className="hq-rise panel p-6 mb-8" style={rise(1)}>
-          <span className="eyebrow">New Idea</span>
+          <span className="eyebrow">Nova ideia</span>
           <form onSubmit={handleSubmit} className="space-y-4 mt-4">
             <input
               type="text"
@@ -323,8 +323,8 @@ export default function IdeasPage() {
                 onChange={(e) => setNewIdea({ ...newIdea, category: e.target.value })}
                 className="flex-1 bg-[var(--surface-2)] border border-[var(--line)] text-[var(--text-2)] px-3 py-2.5 rounded-[var(--r-sm)] text-[13px] focus:outline-none focus:border-[var(--line-strong)]"
               >
-                <option value="build">Build</option>
-                <option value="content">Content</option>
+                <option value="build">Construção</option>
+                <option value="content">Conteúdo</option>
                 <option value="feature">Feature</option>
                 <option value="thread">Thread</option>
                 <option value="experiment">Experiment</option>
@@ -348,9 +348,9 @@ export default function IdeasPage() {
                 variant="primary"
                 disabled={submitting || !newIdea.title.trim() || !newIdea.description.trim()}
               >
-                {submitting ? "Adding..." : "Add Idea"}
+                {submitting ? "Adicionando..." : "Adicionar ideia"}
               </Button>
-              <Button variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button variant="ghost" onClick={() => setShowForm(false)}>Cancelar</Button>
             </div>
           </form>
         </div>

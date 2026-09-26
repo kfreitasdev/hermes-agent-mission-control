@@ -80,7 +80,7 @@ const STATUS_COLUMNS = ["idea", "draft", "ready", "posted"] as const;
 
 export default function ArticlesPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen p-4 md:p-8"><div className="text-[var(--text-3)] text-sm">Loading...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen p-4 md:p-8"><div className="text-[var(--text-3)] text-sm">Carregando...</div></div>}>
       <ArticlesPageContent />
     </Suspense>
   );
@@ -467,8 +467,8 @@ function ArticlesPageContent() {
       <div className="relative z-10 min-h-screen w-full mx-auto p-4 md:p-8 text-[var(--text)]">
       {/* Header */}
       <div className="hq-rise mb-8" style={rise(0)}>
-        <div className="eyebrow mb-2.5">Article Studio</div>
-        <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Compose &amp; publish</h1>
+        <div className="eyebrow mb-2.5">Estúdio de artigos</div>
+        <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Compor e publicar</h1>
 
         {/* Tab Nav */}
         <div className="flex gap-1 mt-6">
@@ -708,7 +708,7 @@ function ComposeTab({
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="text-[13px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
-              ← Back
+              ← Voltar
             </button>
             <h2 className="text-[19px] font-semibold tracking-[-0.015em] text-[var(--text)]">Style &amp; themes</h2>
             <span className="text-[11px] font-medium px-2.5 py-1 rounded-full border border-[var(--line)] bg-[var(--surface-2)] text-[var(--text-2)]">
@@ -780,7 +780,7 @@ function ComposeTab({
           {/* Inspiration URLs */}
           <div className="space-y-2.5">
             <label className="text-[13px] text-[var(--text-2)]">
-              Or paste external article URLs (one per line)
+              Ou cole URLs de artigos externos (uma por linha)
             </label>
             <textarea
               value={inspirationUrls}
@@ -821,7 +821,7 @@ function ComposeTab({
                 <span className="animate-spin">⏳</span> Generating...
               </>
             ) : (
-              <>Generate Titles →</>
+              <>Gerar títulos →</>
             )}
           </button>
         </div>
@@ -832,9 +832,9 @@ function ComposeTab({
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="text-[13px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
-              ← Back
+              ← Voltar
             </button>
-            <h2 className="text-[19px] font-semibold tracking-[-0.015em] text-[var(--text)]">Choose a title</h2>
+            <h2 className="text-[19px] font-semibold tracking-[-0.015em] text-[var(--text)]">Escolha um título</h2>
           </div>
 
           {/* Saved Titles */}
@@ -897,7 +897,7 @@ function ComposeTab({
                       >
                         <p className="text-[13px] text-[var(--text)] pr-8 leading-snug">{title}</p>
                         <span className="text-[11px] text-[var(--accent)] opacity-0 group-hover:opacity-100 transition mt-2 block">
-                          Use this title →
+                          Usar este título →
                         </span>
                       </button>
                       <button
@@ -937,15 +937,15 @@ function ComposeTab({
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="text-[13px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
-              ← Back
+              ← Voltar
             </button>
-            <h2 className="text-[19px] font-semibold tracking-[-0.015em] text-[var(--text)]">Write article</h2>
+            <h2 className="text-[19px] font-semibold tracking-[-0.015em] text-[var(--text)]">Escrever artigo</h2>
           </div>
 
           {generatingArticle ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="text-4xl mb-4 animate-pulse">✍️</div>
-              <p className="text-[var(--text-2)] text-sm">Researching and writing...</p>
+              <p className="text-[var(--text-2)] text-sm">Pesquisando e escrevendo...</p>
               <p className="text-[12px] text-[var(--text-3)] mt-2">This may take a moment</p>
             </div>
           ) : currentArticle ? (
@@ -973,7 +973,7 @@ function ComposeTab({
                     onClick={() => onSaveArticle("draft")}
                     className="btn-ghost px-4 py-2 text-[13px]"
                   >
-                    Save Draft
+                    Salvar rascunho
                   </button>
                   <button
                     onClick={() => onSaveArticle("ready")}
@@ -1016,9 +1016,9 @@ function ComposeTab({
 
               {/* Right Panel: Info + Chat */}
               <div className="space-y-4">
-                {/* Article Info */}
+                {/* Título do artigo */}
                 <div className="panel p-4 space-y-3">
-                  <h4 className="eyebrow">Article Info</h4>
+                  <h4 className="eyebrow">Título do artigo</h4>
                   {selectedTrack && (
                     <div className="text-[11px] font-medium px-2.5 py-1 rounded-full inline-block border border-[var(--line)] bg-[var(--surface-2)] text-[var(--text-2)]">
                       {TRACK_CONFIG[selectedTrack].emoji} {TRACK_CONFIG[selectedTrack].label}
@@ -1061,7 +1061,7 @@ function ComposeTab({
                   <div className="flex-1 overflow-y-auto p-3 space-y-3">
                     {chatMessages.length === 0 && (
                       <div className="text-center py-8 space-y-2.5">
-                        <p className="text-[var(--text-3)] text-[12px]">Ask Sonnet to revise sections, fact-check claims, or improve the article.</p>
+                        <p className="text-[var(--text-3)] text-[12px]">Pedir ao Sonnet para revisar seções, verificar fatos ou melhorar o artigo.</p>
                         <div className="flex flex-wrap justify-center gap-1.5">
                           {["Make the opening punchier", "Is this data accurate?", "Shorten the conclusion"].map((s) => (
                             <button
@@ -1094,7 +1094,7 @@ function ComposeTab({
                           <div className="whitespace-pre-wrap">{msg.content}</div>
                           {msg.searchUsed && (
                             <div className="mt-1.5 text-[10px] text-[var(--accent)] flex items-center gap-1">
-                              🌐 Used web search
+                              🌐 Pesquisa na web utilizada
                             </div>
                           )}
                         </div>
@@ -1150,9 +1150,9 @@ function ComposeTab({
         <div className="space-y-6">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="text-[13px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
-              ← Back
+              ← Voltar
             </button>
-            <h2 className="text-[19px] font-semibold tracking-[-0.015em] text-[var(--text)]">Article visuals</h2>
+            <h2 className="text-[19px] font-semibold tracking-[-0.015em] text-[var(--text)]">Visuais do artigo</h2>
           </div>
 
           <div className="panel p-6 space-y-4">
@@ -1161,7 +1161,7 @@ function ComposeTab({
               <div className="flex items-center justify-between p-3 rounded-[var(--r-md)] bg-[var(--surface-2)] border border-[var(--line)]">
                 <div>
                   <p className="text-[13px] font-medium text-[var(--text)]">Hero Image</p>
-                  <p className="text-[12px] text-[var(--text-3)]">Wide banner for the top of the article</p>
+                  <p className="text-[12px] text-[var(--text-3)]">Banner amplo para o topo do artigo</p>
                 </div>
                 <button className="btn-ghost px-3 py-1.5 text-[12px]">
                   Generate
@@ -1170,7 +1170,7 @@ function ComposeTab({
               <div className="flex items-center justify-between p-3 rounded-[var(--r-md)] bg-[var(--surface-2)] border border-[var(--line)]">
                 <div>
                   <p className="text-[13px] font-medium text-[var(--text)]">Timeline Graphic</p>
-                  <p className="text-[12px] text-[var(--text-3)]">For the story progression section</p>
+                  <p className="text-[12px] text-[var(--text-3)]">Para a seção de desenvolvimento da história</p>
                 </div>
                 <button className="btn-ghost px-3 py-1.5 text-[12px]">
                   Generate
@@ -1179,7 +1179,7 @@ function ComposeTab({
               <div className="flex items-center justify-between p-3 rounded-[var(--r-md)] bg-[var(--surface-2)] border border-[var(--line)]">
                 <div>
                   <p className="text-[13px] font-medium text-[var(--text)]">Data Visualization</p>
-                  <p className="text-[12px] text-[var(--text-3)]">Charts or stats callouts</p>
+                  <p className="text-[12px] text-[var(--text-3)]">Chamadas com gráficos ou estatísticas</p>
                 </div>
                 <button className="btn-ghost px-3 py-1.5 text-[12px]">
                   Generate
@@ -1189,7 +1189,7 @@ function ComposeTab({
           </div>
 
           <div className="rounded-[var(--r-lg)] border border-dashed border-[var(--line-strong)] p-8 text-center">
-            <p className="text-[var(--text-2)] text-[13px]">Visual generation coming soon</p>
+            <p className="text-[var(--text-2)] text-[13px]">Geração de visuais em breve</p>
             <p className="text-[var(--text-3)] text-[12px] mt-1">Placeholder for hero image preview</p>
           </div>
         </div>
@@ -1792,7 +1792,7 @@ function ArticleEditor({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button onClick={onClose} className="text-[var(--text-3)] hover:text-[var(--text)] transition-colors">
-            ← Back to Library
+            ← Voltar to Library
           </button>
           <select
             value={track}

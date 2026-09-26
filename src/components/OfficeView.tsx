@@ -305,7 +305,7 @@ function AgentDesk({ agent, label, isMax }: { agent: Agent | undefined; label: s
           <div className="flex items-center gap-1 mt-1">
             <div className={`w-1.5 h-1.5 rounded-full ${colors.dot} ${isWorking ? "animate-pulse" : ""}`} />
             <span className={`text-[10px] font-bold tracking-wider uppercase ${isOffline ? "text-neutral-600" : "text-white/80"}`}>
-              {agent?.name ?? "Empty"}
+              {agent?.name ?? "Vazio"}
             </span>
           </div>
         </div>
@@ -412,10 +412,10 @@ export default function OfficeView({ agents }: { agents: Agent[] }) {
       {/* Legend */}
       <div className="border-t border-neutral-800/60 px-6 py-3 flex items-center gap-6 flex-wrap">
         {[
-          { status: "working", label: "Working" },
-          { status: "idle",    label: "Idle" },
+          { status: "working", label: "Trabalhando" },
+          { status: "idle",    label: "Ocioso" },
           { status: "offline", label: "Offline" },
-          { status: "error",   label: "Error" },
+          { status: "error",   label: "Erro" },
         ].map(({ status, label }) => (
           <div key={status} className="flex items-center gap-1.5">
             <div className={`w-2 h-2 rounded-full ${STATUS[status]?.dot ?? "bg-neutral-600"}`} />

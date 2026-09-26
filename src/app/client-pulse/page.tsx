@@ -106,46 +106,46 @@ export default function ClientPulsePage() {
     <div className="relative z-10 p-8 space-y-8 text-[var(--text)]">
       <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <Eyebrow>Quality control</Eyebrow>
-          <h1 className="mt-1 text-[28px] font-semibold tracking-[-0.02em] text-[var(--text)]">Client Pulse</h1>
-          <p className="text-sm text-[var(--text-2)] mt-1">Telegram client sentiment, response SLAs, check-in cadence, and renewal risk.</p>
+          <Eyebrow>Controle de qualidade</Eyebrow>
+          <h1 className="mt-1 text-[28px] font-semibold tracking-[-0.02em] text-[var(--text)]">Pulso dos clientes</h1>
+          <p className="text-sm text-[var(--text-2)] mt-1">Sentimento dos clientes no Telegram, prazos de resposta, frequência de acompanhamento e risco de renovação.</p>
         </div>
         <div className="text-right">
-          <Eyebrow>Average score</Eyebrow>
+          <Eyebrow>Média geral</Eyebrow>
           <p className="num text-[40px] font-semibold tracking-[-0.02em] leading-none mt-1" style={{ color: scoreColor(data?.average || 0) }}>{data?.average ?? "—"}</p>
         </div>
       </header>
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Panel className="p-4">
-          <Eyebrow className="text-[var(--down)]">Urgent</Eyebrow>
+          <Eyebrow className="text-[var(--down)]">Urgente</Eyebrow>
           <p className="num text-[28px] font-semibold tracking-[-0.02em] mt-1">{data?.counts.urgent || 0}</p>
         </Panel>
         <Panel className="p-4">
-          <Eyebrow className="text-[var(--warn)]">Needs attention</Eyebrow>
+          <Eyebrow className="text-[var(--warn)]">Precisa de atenção</Eyebrow>
           <p className="num text-[28px] font-semibold tracking-[-0.02em] mt-1">{data?.counts.needsAttention || 0}</p>
         </Panel>
         <Panel className="p-4">
-          <Eyebrow>Watch</Eyebrow>
+          <Eyebrow>Monitorar</Eyebrow>
           <p className="num text-[28px] font-semibold tracking-[-0.02em] mt-1">{data?.counts.watch || 0}</p>
         </Panel>
         <Panel className="p-4">
-          <Eyebrow className="text-[var(--up)]">Healthy</Eyebrow>
+          <Eyebrow className="text-[var(--up)]">Saudável</Eyebrow>
           <p className="num text-[28px] font-semibold tracking-[-0.02em] mt-1">{data?.counts.healthy || 0}</p>
         </Panel>
       </section>
 
       <section className="flex flex-wrap gap-3">
         <select value={category} onChange={(event) => setCategory(event.target.value)} className={selectClass}>
-          <option value="all">All categories</option>
+          <option value="all">Todas as categorias</option>
           {Object.entries(categoryLabel).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
         <select value={service} onChange={(event) => setService(event.target.value)} className={selectClass}>
-          <option value="all">All services</option>
+          <option value="all">Todos os serviços</option>
           {services.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
         <select value={owner} onChange={(event) => setOwner(event.target.value)} className={selectClass}>
-          <option value="all">All PMs</option>
+          <option value="all">Todos os responsáveis</option>
           {owners.map((item) => <option key={item} value={item}>{item}</option>)}
         </select>
       </section>
@@ -159,25 +159,25 @@ export default function ClientPulsePage() {
                   <h2 className="text-lg font-semibold tracking-[-0.015em] text-[var(--text)]">{client.clientName}</h2>
                   <Pill tone={categoryTone[client.category]}>{categoryLabel[client.category]}</Pill>
                 </div>
-                <p className="text-sm text-[var(--text-3)] mt-1">{client.productManagerName || "Unassigned"} · {client.services.join(", ") || "No service"} · {client.status || "No status"}</p>
+                <p className="text-sm text-[var(--text-3)] mt-1">{client.productManagerName || "Não atribuído"} · {client.services.join(", ") || "Sem serviço"} · {client.status || "Sem status"}</p>
               </div>
               <div className="text-right">
                 <p className="num text-[40px] font-semibold tracking-[-0.02em] leading-none" style={{ color: scoreColor(client.score) }}>{client.score}</p>
-                <p className="text-xs text-[var(--text-3)] mt-1">overall</p>
+                <p className="text-xs text-[var(--text-3)] mt-1">geral</p>
               </div>
             </div>
             <div className="grid grid-cols-4 gap-2 text-center">
-              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Sentiment</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.sentimentScore}</p></div>
-              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Response</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.responseScore}</p></div>
-              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Cadence</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.cadenceScore}</p></div>
-              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Renewal</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.renewalRiskScore}</p></div>
+              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Sentimento</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.sentimentScore}</p></div>
+              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Resposta</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.responseScore}</p></div>
+              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Frequência</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.cadenceScore}</p></div>
+              <div className="bg-[var(--surface-2)] rounded-[var(--r-md)] p-3"><p className="text-xs text-[var(--text-3)]">Renovação</p><p className="num font-semibold text-[var(--text)] mt-0.5">{client.renewalRiskScore}</p></div>
             </div>
             <div className="text-sm text-[var(--text-2)] space-y-2">
-              <p><span className="text-[var(--text-3)]">Renewal/end:</span> {dateLabel(client.renewalDate || client.endDate)}</p>
-              {client.llmSummary && <p><span className="text-[var(--text-3)]">Summary:</span> {client.llmSummary}</p>}
-              {client.recommendedAction && <p><span className="text-[var(--text-3)]">Action:</span> {client.recommendedAction}</p>}
-              {client.lastClientMessage && <p><span className="text-[var(--text-3)]">Last client:</span> {client.lastClientMessage}</p>}
-              {client.lastInternalReply && <p><span className="text-[var(--text-3)]">Last internal:</span> {client.lastInternalReply}</p>}
+              <p><span className="text-[var(--text-3)]">Renovação/fim:</span> {dateLabel(client.renewalDate || client.endDate)}</p>
+              {client.llmSummary && <p><span className="text-[var(--text-3)]">Resumo:</span> {client.llmSummary}</p>}
+              {client.recommendedAction && <p><span className="text-[var(--text-3)]">Ação:</span> {client.recommendedAction}</p>}
+              {client.lastClientMessage && <p><span className="text-[var(--text-3)]">Última mensagem do cliente:</span> {client.lastClientMessage}</p>}
+              {client.lastInternalReply && <p><span className="text-[var(--text-3)]">Última resposta interna:</span> {client.lastInternalReply}</p>}
             </div>
             <div className="space-y-1">
               {client.reasons.slice(0, 4).map((reason) => <p key={reason} className="text-xs text-[var(--text-3)]">• {reason}</p>)}
@@ -188,9 +188,9 @@ export default function ClientPulsePage() {
       </section>
 
       <Panel className="p-5">
-        <SectionHeader title="Unmapped Telegram chats" />
+        <SectionHeader title="Conversas do Telegram não mapeadas" />
         {!data?.unmappedChats.length && (
-          <EmptyState title="No unmapped chats discovered yet." />
+          <EmptyState title="Nenhuma conversa não mapeada encontrada ainda." />
         )}
         <div className="space-y-2">
           {data?.unmappedChats.map((chat) => (
