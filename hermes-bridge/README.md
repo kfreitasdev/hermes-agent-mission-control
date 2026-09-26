@@ -10,7 +10,8 @@ website  ◀──read projections────  schema         ◀──mirror�
 
 ## What it does
 - **Pull (Hermes → website):** mirrors the kanban board into `HermesTask`, cron list + health into `DataStore`, and writes activity to `AgentEvent`.
-- **Push (website → Hermes):** runs `AgentRequest` rows that are `queued` (safe) or `approved` (you approved a side-effecting one) via the `hermes` CLI, then writes results back. It never runs `awaiting_approval` rows.
+- **Push (website → Hermes):** runs `AgentRequest` rows that are `queued` (safe) or `approved` (you approved a side-effecting one) via the selected persistent Hermes Profile, then writes results back. It never runs `awaiting_approval` rows.
+- Each request carries `target_profile` and a structured `handoff` JSON object. The bridge validates the Profile against the local fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`) before invoking `hermes -p <profile> -z ...`.
 
 ## Setup (on the Mac mini)
 1. Copy this folder to the mini (or `git pull` the repo there).

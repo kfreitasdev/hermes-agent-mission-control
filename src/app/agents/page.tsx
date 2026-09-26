@@ -242,8 +242,8 @@ export default function AgentsPage() {
     );
   }
 
-  const maxAgent = agents.find(a => a.id === "max");
-  const teamAgents = agents.filter(a => a.id !== "max");
+  const leadAgent = agents.find(a => a.id === "glowryia");
+  const teamAgents = agents.filter(a => a.id !== "glowryia");
   const online = agents.filter(a => a.status !== "offline").length;
   const working = agents.filter(a => a.status === "working").length;
   const totalTasks = agents.reduce((sum, a) => sum + a.tasksCompleted, 0);
@@ -309,18 +309,18 @@ export default function AgentsPage() {
           <OfficeView agents={agents} />
           {/* Chat quick-launch strip */}
           <div className="flex flex-wrap gap-2 pt-2">
-            {agents.filter(a => a.id !== "max").map(a => (
+            {agents.filter(a => a.id !== "glowryia").map(a => (
               <button key={a.id} onClick={() => setChatAgent(a)}
                 className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] text-[var(--text-2)] transition-colors panel-interactive"
                 style={{ background: "var(--surface-1)", border: "1px solid var(--line)" }}>
                 <span>{a.emoji}</span> Chat with {a.name}
               </button>
             ))}
-            {agents.find(a => a.id === "max") && (
-              <button onClick={() => setChatAgent(agents.find(a => a.id === "max")!)}
+            {leadAgent && (
+              <button onClick={() => setChatAgent(leadAgent)}
                 className="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[12px] transition-colors"
                 style={{ color: "var(--accent)", background: "color-mix(in srgb, var(--accent) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 28%, transparent)" }}>
-                🐺 Chat with Max
+                ✦ Chat with Glowryia
               </button>
             )}
           </div>
@@ -330,12 +330,12 @@ export default function AgentsPage() {
       {/* Cards View */}
       {view === "cards" && (
         <>
-          {/* Chief of Staff (Max) — full width */}
-          {maxAgent && (
+          {/* Lead Profile (Glowryia) — full width */}
+          {leadAgent && (
             <AgentCard
-              agent={maxAgent}
-              isExpanded={expandedAgent === maxAgent.id}
-              onToggle={() => setExpandedAgent(expandedAgent === maxAgent.id ? null : maxAgent.id)}
+              agent={leadAgent}
+              isExpanded={expandedAgent === leadAgent.id}
+              onToggle={() => setExpandedAgent(expandedAgent === leadAgent.id ? null : leadAgent.id)}
             />
           )}
 
@@ -357,10 +357,10 @@ export default function AgentsPage() {
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2.5 rounded-[var(--r-md)] px-4 py-2.5"
                 style={{ background: "color-mix(in srgb, var(--accent) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--accent) 24%, transparent)" }}>
-                <span className="text-xl">🐺</span>
+                <span className="text-xl">✦</span>
                 <div>
-                  <div className="text-[13px] font-semibold text-[var(--text)]">Max</div>
-                  <div className="text-[10px] text-[var(--text-3)]">Chief of Staff · Orchestrator</div>
+                  <div className="text-[13px] font-semibold text-[var(--text)]">Glowryia</div>
+                  <div className="text-[10px] text-[var(--text-3)]">Orquestradora · Líder da frota</div>
                 </div>
               </div>
               <div className="w-px h-6" style={{ background: "var(--line-strong)" }} />

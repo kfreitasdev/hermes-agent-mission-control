@@ -511,6 +511,8 @@ model AgentRequest {
   kind          String    @default("oneshot") // "oneshot" | "kanban" | "chat"
   title         String
   prompt        String?
+  targetProfile String    @map("target_profile") @default("glowryia")
+  handoff       Json      @default("{}")
   sideEffecting Boolean   @map("side_effecting") @default(false)
   status        String    @default("queued")  // queued | awaiting_approval | approved | running | done | failed | rejected
   result        String?

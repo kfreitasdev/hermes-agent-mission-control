@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/kit";
 import { HermesDispatches } from "@/components/hermes-dispatches";
 import { HermesRuns } from "@/components/hermes-runs";
+import { MISSION_PROFILES, type MissionProfile } from "@/lib/mission-profiles";
 
 // ── Types ─────────────────────────────────────────────────
 type ReqStatus =
@@ -43,6 +44,8 @@ interface Req {
   kind: string;
   title: string;
   prompt: string | null;
+  targetProfile: string;
+  handoff: Record<string, unknown>;
   sideEffecting: boolean;
   status: ReqStatus;
   result: string | null;
@@ -191,6 +194,7 @@ function HealthChip({ health }: { health: Health | null }) {
 // ── Dispatch bar ──────────────────────────────────────────
 function DispatchBar({ onDone }: { onDone: () => void }) {
   const [text, setText] = useState("");
+  const [targetProfile, setTargetProfile] = useState<MissionProfile>("glowryia");
   const [side, setSide] = useState(false);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -211,7 +215,12 @@ function DispatchBar({ onDone }: { onDone: () => void }) {
       const r = await fetch("/api/hermes/dispatch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: "oneshot", title, sideEffecting: side }),
+        body: JSON.stringify({
+          kind: "oneshot",
+          title,
+          targetProfile,
+          sideEffecting: side,
+        }),
       });
       if (r.ok) {
         setText("");
@@ -244,6 +253,20 @@ function DispatchBar({ onDone }: { onDone: () => void }) {
           className="flex-1 min-w-0 bg-transparent text-[14px] text-[var(--text)] placeholder:text-[var(--text-3)] px-3.5 py-2.5 rounded-[10px] border border-[var(--line)] focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] outline-none transition-colors"
         />
         <div className="flex items-center gap-3 shrink-0">
+          <label className="flex items-center gap-2 text-[12px] text-[var(--text-2)]">
+            <span className="sr-only">Profile alvo</span>
+            <select
+              value={targetProfile}
+              onChange={(e) => setTargetProfile(e.target.value as MissionProfile)}
+              className="bg-[var(--surface-2)] text-[12px] text-[var(--text-2)] px-2.5 py-2 rounded-[8px] border border-[var(--line)] outline-none"
+            >
+              {Object.entries(MISSION_PROFILES).map(([id, profile]) => (
+                <option key={id} value={id}>
+                  {profile.name} · {profile.role}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="button"
             onClick={() => setSide((s) => !s)}
@@ -313,6 +336,7 @@ function InboxCard({ req, onAction }: { req: Req; onAction: () => void }) {
       <div className="flex items-start justify-between gap-3 mb-2.5">
         <div className="flex items-center gap-2 flex-wrap">
           <Pill tone="neutral">{req.kind}</Pill>
+          <Pill tone="accent">{req.targetProfile || "glowryia"}</Pill>
           {req.sideEffecting && <Pill tone="warn">side-effecting</Pill>}
         </div>
         <span className="num text-[10.5px] text-[var(--text-3)] shrink-0 mt-1">

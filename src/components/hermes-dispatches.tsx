@@ -10,6 +10,8 @@ type Req = {
   kind: string;
   title: string;
   prompt: string | null;
+  targetProfile: string;
+  handoff: Record<string, unknown>;
   sideEffecting: boolean;
   status: string;
   result: string | null;
@@ -92,6 +94,7 @@ export function HermesDispatches() {
                     </span>
                   )}
                   <p className="flex-1 min-w-0 text-[14px] text-[var(--text)] truncate">{r.title}</p>
+                  <Pill tone="accent">{r.targetProfile || "glowryia"}</Pill>
                   <Pill tone={tone}>{LABEL[r.status] ?? r.status}</Pill>
                   <span className="num text-[11px] text-[var(--text-3)] shrink-0 w-16 text-right">{ago(r.createdAt)}</span>
                 </div>

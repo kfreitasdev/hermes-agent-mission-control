@@ -105,11 +105,8 @@ process runs on the machine where Hermes lives.
         └────────────────────────────────────────────────────────┘
 ```
 
-- **Website → agent:** the site inserts an `AgentRequest`. Safe requests are
-  `queued`; anything side-effecting is `awaiting_approval` until you approve it in
-  the inbox.
-- **Bridge → agent:** the bridge polls Postgres, runs `queued`/`approved` requests
-  via the `hermes` CLI, and writes results back. It never runs `awaiting_approval`.
+- **Website → agent:** the site inserts an `AgentRequest` with `target_profile` and a structured `handoff`. Safe requests are `queued`; anything side-effecting is `awaiting_approval` until you approve it in the inbox.
+- **Bridge → agent:** the bridge validates the target against the persistent Hermes fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`), invokes `hermes -p <profile>`, and writes results back. It never runs `awaiting_approval`.
 - **Agent → website:** the bridge mirrors the kanban board (`HermesTask`), cron +
   health (`DataStore`), memory (`HermesMemory`), and activity (`AgentEvent`) back
   into Postgres, where the website reads them.
@@ -169,10 +166,17 @@ Generate a secret with:
 openssl rand -base64 32
 ```
 
-### 3. Create the database tables
+### 3. Apply the database migrations
+
+The Glowryia deployment uses the existing Supabase project and the dedicated
+`agent_mission` schema. Apply the versioned SQL migrations from
+`/root/glowryia-console/supabase/migrations/` through the Supabase migration
+workflow. Do **not** run `npx prisma db push` against the shared database.
+
+Prisma is used only to generate the typed client after the schema is aligned:
 
 ```sh
-npx prisma db push
+npx prisma generate
 ```
 
 ### 4. Run locally
