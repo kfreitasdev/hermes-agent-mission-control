@@ -118,6 +118,11 @@ export async function GET(req: NextRequest) {
   });
   } catch (err: any) {
     console.error("GET /api/x-content error:", err);
+    if (err?.code === "P2021" || err?.code === "P2022") {
+      return NextResponse.json([], {
+        headers: { "Cache-Control": "no-store", "X-Content-Store": "unavailable" },
+      });
+    }
     return NextResponse.json({ error: err?.message || String(err) }, { status: 500 });
   }
 }
