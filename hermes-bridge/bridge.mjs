@@ -23,6 +23,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { normalizeDatabaseUrl } from "./connection.mjs";
 
 const execFileP = promisify(execFile);
 const HERMES = process.env.HERMES_BIN || "hermes";
@@ -50,7 +51,11 @@ if (DB_URL.startsWith("prisma://") || DB_URL.startsWith("prisma+")) {
 }
 // Cloud Postgres (Prisma Postgres/Neon/Supabase/RDS) needs SSL; localhost doesn't.
 const isLocal = /@(localhost|127\.0\.0\.1)/.test(DB_URL);
-const pool = new pg.Pool({ connectionString: DB_URL, max: 4, ssl: isLocal ? undefined : { rejectUnauthorized: false } });
+const pool = new pg.Pool({
+  connectionString: isLocal ? DB_URL : normalizeDatabaseUrl(DB_URL),
+  max: 4,
+  ssl: isLocal ? undefined : { rejectUnauthorized: false },
+});
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 const q = (text, params) => pool.query(text, params);

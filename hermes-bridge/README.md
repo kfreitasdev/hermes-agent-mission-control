@@ -36,7 +36,7 @@ website  ◀──read projections────  schema         ◀──mirror�
 ## Config (env)
 | var | default | meaning |
 |---|---|---|
-| `DATABASE_URL` | — (required) | direct Postgres URL for the same Supabase project; never a Prisma Accelerate URL |
+| `DATABASE_URL` | — (required) | direct Postgres URL for the same Supabase project; never a Prisma Accelerate URL. The bridge removes `sslmode` from hosted URLs and applies its explicit TLS policy, so the Supabase URI may safely include `sslmode=require` |
 | `HERMES_BOARD` | `default` | kanban board slug to mirror |
 | `HERMES_BIN` | `hermes` | path to the CLI if not on PATH |
 | `BRIDGE_POLL_MS` | `5000` | how often to check for new requests |
