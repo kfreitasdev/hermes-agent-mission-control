@@ -231,7 +231,7 @@ export default function XAnalyticsPage() {
                           key={h}
                           className="w-5 h-5 rounded-sm shrink-0"
                           style={{ background: cellColor(cell?.avgViews || 0) }}
-                          title={cell ? `${cell.count} tweet${cell.count > 1 ? "s" : ""}, avg ${fmt(cell.avgViews)} views` : "No data"}
+                          title={cell ? `${cell.count} publicação${cell.count > 1 ? "ões" : ""}, média de ${fmt(cell.avgViews)} visualizações` : "Sem dados"}
                         />
                       );
                     })}

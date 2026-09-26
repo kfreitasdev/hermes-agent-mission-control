@@ -7,8 +7,8 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
-  title: "Hermy HQ",
-  description: "Your command center",
+  title: "Glowryia Agents",
+  description: "Central de agentes da Glowryia",
 };
 
 export const viewport: Viewport = {
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" dir="ltr" className="dark">
+    <html lang="pt-BR" dir="ltr" className="dark">
       <body className={`${geist.variable} ${geistMono.variable} ${geist.className} bg-[#0a0a0a] text-white min-h-screen`}>
         <ConditionalLayout>{children}</ConditionalLayout>
       </body>

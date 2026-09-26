@@ -571,7 +571,7 @@ export default function LongFormPage() {
                       }).then(() => { setTweaking(false); setTweakOpen(false); setTweakMsg(""); }).catch(() => setTweaking(false));
                     }
                   }}
-                  placeholder="e.g. 'make the hook more outcome-based' or 'change title to focus on results'"
+                  placeholder="ex.: 'torne o gancho mais orientado a resultados' ou 'mude o título para focar nos resultados'"
                   className={`flex-1 ${INPUT} px-3 py-2 text-sm focus:border-[var(--warn)]`}
                   autoFocus
                 />
@@ -587,7 +587,7 @@ export default function LongFormPage() {
                   }}
                   disabled={!tweakMsg.trim() || tweaking}
                   className={`px-4 py-2 rounded-[var(--r-md)] text-xs font-medium transition-colors ${tweakMsg.trim() && !tweaking ? TONE.warn : "bg-[var(--surface-2)] text-[var(--text-4)] cursor-not-allowed"}`}
-                >{tweaking ? "Enviando..." : "Send"}</button>
+                >{tweaking ? "Enviando..." : "Enviar"}</button>
                 <button onClick={() => { setTweakOpen(false); setTweakMsg(""); }} className="px-3 py-2 rounded-[var(--r-md)] text-xs text-[var(--text-2)] hover:bg-[var(--surface-2)] transition-colors">Cancelar</button>
               </div>
             </div>
@@ -807,11 +807,11 @@ export default function LongFormPage() {
       {/* Main Tabs */}
       <div className="flex items-center gap-0 border-b border-[var(--line)] overflow-x-auto">
         {([
-          { key: "ideas" as const, label: "💡 Ideas", count: draftScripts.length },
-          { key: "scripts" as const, label: "📜 Scripts", count: approvedScripts.length },
-          { key: "tofilm" as const, label: "🎬 To Film", count: tofilmScripts.length },
-          { key: "filmed" as const, label: "✅ Filmed", count: filmedScripts.length },
-          { key: "posted" as const, label: "🚀 Posted", count: postedScripts.length },
+          { key: "ideas" as const, label: "💡 Ideias", count: draftScripts.length },
+          { key: "scripts" as const, label: "📜 Roteiros", count: approvedScripts.length },
+          { key: "tofilm" as const, label: "🎬 Para gravar", count: tofilmScripts.length },
+          { key: "filmed" as const, label: "✅ Gravados", count: filmedScripts.length },
+          { key: "posted" as const, label: "🚀 Publicados", count: postedScripts.length },
         ]).map(tab => (
           <button
             key={tab.key}
@@ -862,13 +862,13 @@ export default function LongFormPage() {
           <div className="space-y-3">
             {draftScripts.length === 0 && rejectedScripts.length === 0 ? (
               <div className="panel">
-                <EmptyState icon={<span className="text-3xl">📹</span>} title="No draft scripts yet" hint="Generate one above or scripts will appear here" />
+                <EmptyState icon={<span className="text-3xl">📹</span>} title="Nenhum roteiro em rascunho" hint="Gere um acima ou os roteiros aparecerão aqui" />
               </div>
             ) : (
               <>
                 {draftScripts.length > 0 && (
                   <>
-                    <p className="text-xs text-[var(--text-3)]">Pending review (<span className="num">{draftScripts.length}</span>)</p>
+                    <p className="text-xs text-[var(--text-3)]">Aguardando revisão (<span className="num">{draftScripts.length}</span>)</p>
                     {draftScripts.map(s => <ScriptCard key={s.id} script={s} />)}
                   </>
                 )}
@@ -893,7 +893,7 @@ export default function LongFormPage() {
         <div className="space-y-3">
           {approvedScripts.length === 0 ? (
             <div className="panel">
-              <EmptyState title="No approved scripts" />
+              <EmptyState title="Nenhum roteiro aprovado" />
             </div>
           ) : (
             approvedScripts.map(s => <ScriptCard key={s.id} script={s} />)
@@ -906,7 +906,7 @@ export default function LongFormPage() {
         <div className="space-y-3">
           {tofilmScripts.length === 0 ? (
             <div className="panel">
-              <EmptyState icon={<span className="text-3xl">🎬</span>} title="No scripts queued for filming" hint="Approve scripts to move them here" />
+              <EmptyState icon={<span className="text-3xl">🎬</span>} title="Nenhum roteiro aguardando gravação" hint="Aprove os roteiros para movê-los para cá" />
             </div>
           ) : (
             <>
@@ -922,7 +922,7 @@ export default function LongFormPage() {
                     navigator.clipboard.writeText(text);
                   }}
                   className={`text-xs px-4 py-2 rounded-[var(--r-md)] ${TONE.accent} transition-colors font-medium`}
-                >Copy All Scripts (<span className="num">{tofilmScripts.length}</span>)</button>
+                >Copiar todos os roteiros (<span className="num">{tofilmScripts.length}</span>)</button>
                 <button
                   onClick={async () => {
                     for (const s of tofilmScripts) {
@@ -935,7 +935,7 @@ export default function LongFormPage() {
                     setScripts(prev => prev.map(s => s.status === "tofilm" ? { ...s, status: "filmed" } : s));
                   }}
                   className={`text-xs px-4 py-2 rounded-[var(--r-md)] ${TONE.up} transition-colors font-medium`}
-                >Mark All as Filmed (<span className="num">{tofilmScripts.length}</span>)</button>
+                >Marcar todos como gravados (<span className="num">{tofilmScripts.length}</span>)</button>
               </div>
               {tofilmScripts.map(s => <ScriptCard key={s.id} script={s} />)}
             </>
@@ -948,7 +948,7 @@ export default function LongFormPage() {
         <div className="space-y-3">
           {filmedScripts.length === 0 ? (
             <div className="panel">
-              <EmptyState icon={<span className="text-3xl">✅</span>} title="No filmed scripts yet" />
+              <EmptyState icon={<span className="text-3xl">✅</span>} title="Nenhum roteiro gravado ainda" />
             </div>
           ) : (
             filmedScripts.map(s => <ScriptCard key={s.id} script={s} compact />)

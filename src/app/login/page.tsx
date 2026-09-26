@@ -8,10 +8,10 @@ export default function LoginPage() {
       <div className="relative z-10 panel hq-rise w-full max-w-sm p-8">
         <div className="flex flex-col items-center text-center">
           <div className="w-11 h-11 rounded-[var(--r-md)] bg-white flex items-center justify-center text-[19px] font-bold text-[#0a0b0d]">
-            M
+            G
           </div>
           <h1 className="mt-5 text-[20px] font-semibold tracking-[-0.015em] text-[var(--text)]">
-            Hermy HQ
+            Glowryia Agents
           </h1>
           <p className="eyebrow mt-2">Entre para continuar</p>
         </div>

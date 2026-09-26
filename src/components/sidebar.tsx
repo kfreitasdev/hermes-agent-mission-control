@@ -86,9 +86,9 @@ export function Sidebar() {
   const Logo = () => (
     <div className="flex items-center gap-2.5">
       <div className="w-8 h-8 rounded-[10px] bg-[var(--text)] flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">
-        <span className="text-[#0a0b0d] font-bold text-[13px] tracking-tight">H</span>
+        <span className="text-[#0a0b0d] font-bold text-[13px] tracking-tight">G</span>
       </div>
-      <span className="font-semibold text-[var(--text)] tracking-[-0.01em] text-[15px]">Hermy HQ</span>
+      <span className="font-semibold text-[var(--text)] tracking-[-0.01em] text-[15px]">Glowryia Agents</span>
     </div>
   );
 

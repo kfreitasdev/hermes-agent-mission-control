@@ -294,14 +294,14 @@ function TopPerformers({ posted }: { posted: Draft[] }) {
     <>
       <SectionHeader
         label="What worked"
-        title="Top performers"
-        action={<span className="num text-[11px] text-[var(--text-3)]">by views</span>}
+        title="Melhores resultados"
+        action={<span className="num text-[11px] text-[var(--text-3)]">por visualizações</span>}
       />
       {ranked.length === 0 ? (
         <Panel className="p-2">
           <EmptyState
             icon={<Trophy className="w-6 h-6" />}
-            title="No view data yet"
+            title="Nenhum dado de visualização ainda"
             hint="Publicações com métricas aparecerão aqui — o ciclo de feedback do que vale repetir."
           />
         </Panel>
@@ -506,7 +506,7 @@ export default function ContentOSPage() {
         <section className="mt-14">
           {!loaded ? (
             <>
-              <SectionHeader label="What worked" title="Top performers" />
+              <SectionHeader label="O que funcionou" title="Melhores resultados" />
               <Skeleton className="h-64" />
             </>
           ) : (

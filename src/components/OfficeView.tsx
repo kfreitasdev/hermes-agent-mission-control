@@ -23,11 +23,14 @@ interface Agent {
 
 // ── Desk layout ───────────────────────────────────────────
 const DESK_LAYOUT = [
-  { agentId: "max",   label: "CEO Corner",   zone: "ceo" },
-  { agentId: "sage",  label: "Research Bay", zone: "team" },
-  { agentId: "knox",  label: "Ops Desk",     zone: "team" },
-  { agentId: "nova",  label: "Creative Hub", zone: "team" },
-  { agentId: "pixel", label: "Lab",          zone: "team" },
+  { agentId: "glowryia", label: "Central de orquestração", zone: "lead" },
+  { agentId: "max",      label: "Estratégia",              zone: "team" },
+  { agentId: "lia",      label: "Processos",               zone: "team" },
+  { agentId: "nova",     label: "YouTube · Vídeo",          zone: "team" },
+  { agentId: "atlas",    label: "Growth",                   zone: "team" },
+  { agentId: "pulse",    label: "Métricas",                 zone: "team" },
+  { agentId: "iris",     label: "Comercial",                zone: "team" },
+  { agentId: "lex",      label: "Contratos",                zone: "team" },
 ];
 
 // ── Status → visual config ────────────────────────────────
@@ -43,11 +46,14 @@ const STATUS: Record<string, { glow: string; dot: string; bg: string; ring?: str
 
 // ── Per-agent walk timing (keeps them out of sync) ────────
 const WALK = {
-  max:   { wanderDur: "14s", bobDur: "0.35s", bobDelay: "0s",    wanderDelay: "0s" },
-  sage:  { wanderDur: "8s",  bobDur: "0.40s", bobDelay: "0.1s",  wanderDelay: "1.2s" },
-  knox:  { wanderDur: "11s", bobDur: "0.45s", bobDelay: "0.2s",  wanderDelay: "2.5s" },
-  nova:  { wanderDur: "9s",  bobDur: "0.38s", bobDelay: "0.05s", wanderDelay: "0.7s" },
-  pixel: { wanderDur: "12s", bobDur: "0.42s", bobDelay: "0.15s", wanderDelay: "3.1s" },
+  glowryia: { wanderDur: "14s", bobDur: "0.35s", bobDelay: "0s",    wanderDelay: "0s" },
+  max:      { wanderDur: "12s", bobDur: "0.40s", bobDelay: "0.1s",  wanderDelay: "1.2s" },
+  lia:      { wanderDur: "9s",  bobDur: "0.45s", bobDelay: "0.2s",  wanderDelay: "2.5s" },
+  nova:     { wanderDur: "10s", bobDur: "0.38s", bobDelay: "0.05s", wanderDelay: "0.7s" },
+  atlas:    { wanderDur: "11s", bobDur: "0.42s", bobDelay: "0.15s", wanderDelay: "3.1s" },
+  pulse:    { wanderDur: "8s",  bobDur: "0.40s", bobDelay: "0.1s",  wanderDelay: "1.8s" },
+  iris:     { wanderDur: "13s", bobDur: "0.43s", bobDelay: "0.2s",  wanderDelay: "2.2s" },
+  lex:      { wanderDur: "10s", bobDur: "0.37s", bobDelay: "0.08s", wanderDelay: "2.8s" },
 };
 
 // ── Pixel art sprites ─────────────────────────────────────
@@ -229,14 +235,14 @@ function MonitorScreen({ isWorking }: { isWorking: boolean }) {
 }
 
 // ── Agent desk tile ───────────────────────────────────────
-function AgentDesk({ agent, label, isMax }: { agent: Agent | undefined; label: string; isMax: boolean }) {
+function AgentDesk({ agent, label, isLead }: { agent: Agent | undefined; label: string; isLead: boolean }) {
   const rawStatus = agent?.status ?? "offline";
   const statusKey = STATUS[rawStatus] ? rawStatus : "idle";
   const colors = STATUS[statusKey];
   const isWorking = rawStatus === "working";
   const isOffline = rawStatus === "offline" || !agent;
-  const spriteSize = isMax ? 56 : 44;
-  const walk = WALK[agent?.id as keyof typeof WALK] ?? WALK.sage;
+  const spriteSize = isLead ? 56 : 44;
+  const walk = WALK[agent?.id as keyof typeof WALK] ?? WALK.max;
 
   // Pick bubble text: currentTask > last activity > null
   const bubbleText = agent?.currentTask
@@ -244,14 +250,14 @@ function AgentDesk({ agent, label, isMax }: { agent: Agent | undefined; label: s
     || null;
 
   // Bubble cycle delay — stagger so not all pop at once
-  const bubbleDelay = isMax ? "0.5s" : walk.wanderDelay;
+  const bubbleDelay = isLead ? "0.5s" : walk.wanderDelay;
 
   return (
     <div className="relative flex flex-col items-center gap-2">
       {/* Desk tile */}
       <div
         className={`relative rounded-2xl border overflow-visible transition-all duration-500
-          ${isMax ? "w-44 h-44" : "w-36 h-36"}
+          ${isLead ? "w-44 h-44" : "w-36 h-36"}
           ${colors.bg} ${colors.glow}
           ${isOffline ? "opacity-40" : ""}
           hover:scale-105 hover:z-10`}
@@ -355,8 +361,7 @@ function ActivityTicker({ agents }: { agents: Agent[] }) {
 // ── Main export ───────────────────────────────────────────
 export default function OfficeView({ agents }: { agents: Agent[] }) {
   const getAgent = (id: string) => agents.find(a => a.id === id);
-  const maxAgent = getAgent("max");
-  const teamDesks = DESK_LAYOUT.filter(d => d.agentId !== "max");
+  const teamDesks = DESK_LAYOUT.filter(d => d.agentId !== "glowryia");
 
   return (
     <div className="relative rounded-3xl overflow-hidden border border-neutral-800/60 bg-neutral-950/80">
@@ -374,7 +379,7 @@ export default function OfficeView({ agents }: { agents: Agent[] }) {
           <div className="flex items-center gap-3 bg-neutral-900/80 border border-neutral-700/40 rounded-2xl px-5 py-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs font-mono font-bold tracking-[0.2em] text-neutral-400 uppercase">
-              Hermy HQ · Agent Floor
+              Glowryia Agents · Central de agentes
             </span>
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           </div>
@@ -382,13 +387,13 @@ export default function OfficeView({ agents }: { agents: Agent[] }) {
 
         {/* Desks */}
         <div className="flex flex-col items-center gap-8">
-          {/* Row 1 — Max */}
-          <AgentDesk agent={maxAgent} label="CEO Corner" isMax={true} />
+          {/* Row 1 — Glowryia, the orchestrator */}
+          <AgentDesk agent={getAgent("glowryia")} label="Central de orquestração" isLead={true} />
           <div className="w-px h-4 bg-neutral-700/60" />
-          {/* Row 2 — Team */}
+          {/* Row 2 — Specialized team */}
           <div className="flex flex-wrap justify-center gap-6 md:gap-8">
             {teamDesks.map(desk => (
-              <AgentDesk key={desk.agentId} agent={getAgent(desk.agentId)} label={desk.label} isMax={false} />
+              <AgentDesk key={desk.agentId} agent={getAgent(desk.agentId)} label={desk.label} isLead={false} />
             ))}
           </div>
         </div>
@@ -403,7 +408,7 @@ export default function OfficeView({ agents }: { agents: Agent[] }) {
           <span className="text-2xl select-none">🌿</span>
           <div className="flex items-center gap-1">
             <span className="text-xl">☕</span>
-            <span className="text-[10px] text-neutral-500 font-mono">FUEL STATION</span>
+            <span className="text-[10px] text-neutral-500 font-mono">ESTAÇÃO DE ENERGIA</span>
           </div>
           <span className="text-2xl select-none">🌿</span>
         </div>

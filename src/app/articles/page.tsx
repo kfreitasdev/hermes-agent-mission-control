@@ -635,9 +635,9 @@ function ComposeTab({
   const steps = [
     { num: 1, label: "Track" },
     { num: 2, label: "Style" },
-    { num: 3, label: "Title" },
+    { num: 3, label: "Título" },
     { num: 4, label: "Write" },
-    { num: 5, label: "Visuals" },
+    { num: 5, label: "Visuais" },
   ];
 
   return (
@@ -867,7 +867,7 @@ function ComposeTab({
                         onRemoveSavedTitle(saved.id);
                       }}
                       className="absolute top-3 right-3 text-[var(--text-4)] hover:text-[var(--down)] transition text-sm"
-                      title="Remove saved title"
+                      title="Remover título salvo"
                     >
                       ×
                     </button>
@@ -910,7 +910,7 @@ function ComposeTab({
                             ? "text-[var(--warn)] cursor-default"
                             : "text-[var(--text-4)] hover:text-[var(--warn)]"
                         }`}
-                        title={isSaved ? "Already saved" : "Save for later"}
+                        title={isSaved ? "Já salvo" : "Salvar para depois"}
                         disabled={isSaved}
                       >
                         {isSaved ? "★" : "☆"}
@@ -1051,7 +1051,7 @@ function ComposeTab({
                           ? "border-[var(--accent)] text-[var(--accent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)]"
                           : "border-[var(--line)] text-[var(--text-3)] hover:text-[var(--text)]"
                       }`}
-                      title={searchEnabled ? "Web search enabled" : "Enable web search for fact-checking"}
+                      title={searchEnabled ? "Pesquisa na web ativada" : "Ativar pesquisa na web para verificar fatos"}
                     >
                       🌐 Web Search {searchEnabled ? "ON" : "OFF"}
                     </button>
@@ -1227,7 +1227,7 @@ function LibraryTab({
   const [addDate, setAddDate] = useState(new Date().toISOString().split("T")[0]);
   const [addImpressions, setAddImpressions] = useState("");
   const [addLikes, setAddLikes] = useState("");
-  const [addBookmarks, setAddBookmarks] = useState("");
+  const [addSalvamentos, setAddSalvamentos] = useState("");
   const [addHeroImage, setAddHeroImage] = useState("");
   const [scraping, setScraping] = useState(false);
 
@@ -1275,7 +1275,7 @@ function LibraryTab({
         if (data.heroImageUrl) setAddHeroImage(data.heroImageUrl);
         if (data.impressions != null) setAddImpressions(String(data.impressions));
         if (data.likes != null) setAddLikes(String(data.likes));
-        if (data.bookmarks != null) setAddBookmarks(String(data.bookmarks));
+        if (data.bookmarks != null) setAddSalvamentos(String(data.bookmarks));
         if (data.postedDate) setAddDate(data.postedDate);
         if (data.qtTweet) setAddQtText(data.qtTweet);
         if (data.qtUrl) setAddQtUrl(data.qtUrl);
@@ -1332,7 +1332,7 @@ function LibraryTab({
 
           {/* URL input — auto-fetches on paste */}
           <div className="space-y-1.5">
-            <label className="eyebrow">Article URL (paste to auto-fill)</label>
+            <label className="eyebrow">URL do artigo (cole para preencher automaticamente)</label>
             <div className="flex gap-2">
               <input
                 type="url"
@@ -1367,7 +1367,7 @@ function LibraryTab({
                 type="text"
                 value={addTitle}
                 onChange={(e) => setAddTitle(e.target.value)}
-                placeholder="Article title..."
+                placeholder="Título do artigo..."
                 className="w-full bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--r-sm)] p-2 text-[13px] text-[var(--text)] placeholder:text-[var(--text-3)] focus:outline-none focus:border-[var(--line-strong)]"
               />
             </div>
@@ -1415,7 +1415,7 @@ function LibraryTab({
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="eyebrow">Posted Date</label>
+              <label className="eyebrow">Data de publicação</label>
               <input
                 type="date"
                 value={addDate}
@@ -1445,11 +1445,11 @@ function LibraryTab({
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="eyebrow">Bookmarks</label>
+                <label className="eyebrow">Salvamentos</label>
                 <input
                   type="number"
-                  value={addBookmarks}
-                  onChange={(e) => setAddBookmarks(e.target.value)}
+                  value={addSalvamentos}
+                  onChange={(e) => setAddSalvamentos(e.target.value)}
                   placeholder="0"
                   className="w-full bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--r-sm)] p-2 text-[13px] num text-[var(--text)] placeholder:text-[var(--text-3)] focus:outline-none focus:border-[var(--line-strong)]"
                 />
@@ -1483,7 +1483,7 @@ function LibraryTab({
                 scheduledDate: addDate || null,
                 impressions: addImpressions ? Number(addImpressions) : null,
                 likes: addLikes ? Number(addLikes) : null,
-                bookmarks: addBookmarks ? Number(addBookmarks) : null,
+                bookmarks: addSalvamentos ? Number(addSalvamentos) : null,
               });
               setShowAddForm(false);
               setAddTitle("");
@@ -1493,7 +1493,7 @@ function LibraryTab({
               setAddQtText("");
               setAddImpressions("");
               setAddLikes("");
-              setAddBookmarks("");
+              setAddSalvamentos("");
               setAddHeroImage("");
             }}
             disabled={!addTitle.trim()}
@@ -1609,7 +1609,7 @@ function ArticleEditor({
   const [postedUrl, setPostedUrl] = useState(article.postedUrl || "");
   const [impressions, setImpressions] = useState(article.impressions ?? "");
   const [likes, setLikes] = useState(article.likes ?? "");
-  const [bookmarks, setBookmarks] = useState(article.bookmarks ?? "");
+  const [bookmarks, setSalvamentos] = useState(article.bookmarks ?? "");
   const [heroImageUrl, setHeroImageUrl] = useState(article.heroImageUrl || "");
   const todayStr = new Date().toISOString().split("T")[0];
   const [postedDate, setPostedDate] = useState(
@@ -1653,7 +1653,7 @@ function ArticleEditor({
         const data = await res.json();
         if (data.impressions != null) setImpressions(data.impressions);
         if (data.likes != null) setLikes(data.likes);
-        if (data.bookmarks != null) setBookmarks(data.bookmarks);
+        if (data.bookmarks != null) setSalvamentos(data.bookmarks);
       }
     } finally {
       setRefreshingMetrics(false);
@@ -1999,7 +1999,7 @@ function ArticleEditor({
 
             {status === "posted" && (
               <div className="panel p-4 space-y-3">
-                <h4 className="eyebrow">Posted Date</h4>
+                <h4 className="eyebrow">Data de publicação</h4>
                 <input
                   type="date"
                   value={postedDate}
@@ -2045,11 +2045,11 @@ function ArticleEditor({
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-[var(--text-3)] uppercase">Bookmarks</label>
+                    <label className="text-[10px] text-[var(--text-3)] uppercase">Salvamentos</label>
                     <input
                       type="number"
                       value={bookmarks}
-                      onChange={(e) => setBookmarks(e.target.value === "" ? "" : Number(e.target.value))}
+                      onChange={(e) => setSalvamentos(e.target.value === "" ? "" : Number(e.target.value))}
                       placeholder="0"
                       className="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--r-md)] p-2 text-xs num text-[var(--text)] placeholder:text-[var(--text-3)] focus:outline-none focus:border-[var(--line-strong)]"
                     />

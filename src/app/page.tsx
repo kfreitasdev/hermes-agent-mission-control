@@ -541,8 +541,8 @@ export default function Dashboard() {
             />
             {(data.topVideo || data.latestVideo) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {data.topVideo && <YouTubeCard video={data.topVideo} label="Top Performing" />}
-                {data.latestVideo && <YouTubeCard video={data.latestVideo} label="Latest" />}
+                {data.topVideo && <YouTubeCard video={data.topVideo} label="Melhor desempenho" />}
+                {data.latestVideo && <YouTubeCard video={data.latestVideo} label="Mais recente" />}
               </div>
             )}
           </div>

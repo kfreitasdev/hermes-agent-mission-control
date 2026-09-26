@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Hermy HQ",
+  "productName": "Glowryia Agents",
   "version": "0.1.0",
   "identifier": "com.hermyhq.app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Hermy HQ",
+        "title": "Glowryia Agents",
         "width": 1200,
         "height": 800,
         "minWidth": 900,

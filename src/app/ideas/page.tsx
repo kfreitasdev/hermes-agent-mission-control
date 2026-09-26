@@ -306,14 +306,14 @@ export default function IdeasPage() {
               value={newIdea.title}
               onChange={(e) => setNewIdea({ ...newIdea, title: e.target.value })}
               className={inputCls}
-              placeholder="Idea title *"
+              placeholder="Título da ideia *"
               required
             />
             <textarea
               value={newIdea.description}
               onChange={(e) => setNewIdea({ ...newIdea, description: e.target.value })}
               className={`${inputCls} resize-none`}
-              placeholder="Describe the idea *"
+              placeholder="Descreva a ideia *"
               rows={3}
               required
             />
@@ -325,9 +325,9 @@ export default function IdeasPage() {
               >
                 <option value="build">Construção</option>
                 <option value="content">Conteúdo</option>
-                <option value="feature">Feature</option>
+                <option value="feature">Funcionalidade</option>
                 <option value="thread">Thread</option>
-                <option value="experiment">Experiment</option>
+                <option value="experiment">Experimento</option>
               </select>
               <select
                 value={newIdea.estimatedTime}
@@ -335,11 +335,11 @@ export default function IdeasPage() {
                 className="flex-1 bg-[var(--surface-2)] border border-[var(--line)] text-[var(--text-2)] px-3 py-2.5 rounded-[var(--r-sm)] text-[13px] focus:outline-none focus:border-[var(--line-strong)]"
               >
                 <option value="30 minutes">30 min</option>
-                <option value="1 hour">1 hour</option>
-                <option value="2 hours">2 hours</option>
-                <option value="3 hours">3 hours</option>
-                <option value="Half day">Half day</option>
-                <option value="Full day">Full day</option>
+                <option value="1 hour">1 hora</option>
+                <option value="2 hours">2 horas</option>
+                <option value="3 hours">3 horas</option>
+                <option value="Half day">Meio dia</option>
+                <option value="Full day">Dia inteiro</option>
               </select>
             </div>
             <div className="flex gap-2 pt-1">
@@ -380,7 +380,7 @@ export default function IdeasPage() {
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="bg-transparent border border-[var(--line)] text-[var(--text-2)] px-3 py-1.5 rounded-full text-[12px] focus:outline-none focus:border-[var(--line-strong)]"
             >
-              <option value="all">All Categories</option>
+              <option value="all">Todas as categorias</option>
               {uniqueCategories.map(c => (
                 <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
               ))}
@@ -401,8 +401,8 @@ export default function IdeasPage() {
         <div className="panel">
           <EmptyState
             icon={<Lightbulb className="w-8 h-8" />}
-            title="No ideas found"
-            hint={statusFilter !== "all" ? "Try adjusting your filters" : "Add your first idea to get started"}
+            title="Nenhuma ideia encontrada"
+            hint={statusFilter !== "all" ? "Tente ajustar os filtros" : "Adicione sua primeira ideia para começar"}
           />
         </div>
       )}

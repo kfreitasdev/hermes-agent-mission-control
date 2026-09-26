@@ -363,7 +363,7 @@ const DraftCard = memo(function DraftCard({
               <button className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-1)]/90 text-[var(--text-2)] hover:text-[var(--text)]"
                 onClick={async () => { await onRemoveVisual(draft.id); await onGenerateVisual(draft.id); }}>Regenerar</button>
               <button className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-1)]/90 text-[var(--down)] hover:brightness-110"
-                onClick={() => onRemoveVisual(draft.id)}>Remove</button>
+                onClick={() => onRemoveVisual(draft.id)}>Remover</button>
             </div>
           </div>
         ) : null}
@@ -371,11 +371,11 @@ const DraftCard = memo(function DraftCard({
         {/* Metrics (posted) */}
         {draft.status === "posted" && draft.metrics && (
           <div className="flex gap-4 num text-[12px] text-[var(--text-3)] border-t border-[var(--line)] pt-3">
-            <span>{(draft.metrics.views || 0).toLocaleString()} views</span>
-            <span>{(draft.metrics.likes || 0).toLocaleString()} likes</span>
-            <span>{(draft.metrics.retweets || 0).toLocaleString()} RT</span>
-            <span>{(draft.metrics.replies || 0).toLocaleString()} rep</span>
-            <span>{(draft.metrics.bookmarks || 0).toLocaleString()} bk</span>
+            <span>{(draft.metrics.views || 0).toLocaleString()} visualizações</span>
+            <span>{(draft.metrics.likes || 0).toLocaleString()} curtidas</span>
+            <span>{(draft.metrics.retweets || 0).toLocaleString()} RP</span>
+            <span>{(draft.metrics.replies || 0).toLocaleString()} resp.</span>
+            <span>{(draft.metrics.bookmarks || 0).toLocaleString()} salv.</span>
           </div>
         )}
 
@@ -443,7 +443,7 @@ const DraftCard = memo(function DraftCard({
                   const input = (e.currentTarget.elements.namedItem("customReason") as HTMLInputElement);
                   if (input.value.trim()) { onFeedback(draft.id, "rejected", input.value.trim()); onSetRejectPicker(null); }
                 }}>
-                  <input name="customReason" placeholder="Custom reason..." autoFocus
+                  <input name="customReason" placeholder="Motivo personalizado..." autoFocus
                     className="flex-1 bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-[var(--r-sm)] px-2.5 py-1 text-[10px] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--down)]" />
                   <button type="submit" className="text-[10px] px-2.5 py-1 rounded-[var(--r-sm)]" style={toneStyle("var(--down)")}>Rejeitar</button>
                 </form>
@@ -469,7 +469,7 @@ const DraftCard = memo(function DraftCard({
                     const input = (e.currentTarget.elements.namedItem("customReason") as HTMLInputElement);
                     if (input.value.trim()) { onFeedback(draft.id, "rejected", input.value.trim()); onSetRejectPicker(null); }
                   }}>
-                    <input name="customReason" placeholder="Custom reason..." autoFocus
+                    <input name="customReason" placeholder="Motivo personalizado..." autoFocus
                       className="flex-1 bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-[var(--r-sm)] px-2.5 py-1 text-[10px] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--down)]" />
                     <button type="submit" className="text-[10px] px-2.5 py-1 rounded-[var(--r-sm)]" style={toneStyle("var(--down)")}>Rejeitar</button>
                   </form>
@@ -504,7 +504,7 @@ const DraftCard = memo(function DraftCard({
             isShowingPostedUrl ? (
               <div className="flex gap-1 w-full mt-1">
                 <input value={postedUrlValue} onChange={(e) => onSetPostedUrlValue(e.target.value)}
-                  placeholder="Tweet URL (optional)"
+                  placeholder="URL da publicação (opcional)"
                   className="flex-1 bg-[var(--surface-2)] border border-[var(--line-strong)] rounded-[var(--r-sm)] px-2.5 py-1.5 text-[12px] text-[var(--text)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]" />
                 <button onClick={() => onMarkPosted(draft.id, postedUrlValue || undefined)}
                   className={CHIP} style={toneStyle("var(--accent)")}>Concluído</button>
@@ -794,7 +794,7 @@ export default function XContentPage() {
             value={contentRequest}
             onChange={(e) => setContentRequest(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") handleContentRequest(); }}
-            placeholder="Solicitar content... e.g. 'quote retweet my last tweet about bookmarks with an update'"
+            placeholder="Solicitar conteúdo... ex.: 'cite minha última publicação sobre salvamentos com uma atualização'"
             className="w-full bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--r-md)] px-4 py-3 text-[13px] text-[var(--text)] placeholder-[var(--text-3)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)] focus:border-[var(--accent)]"
           />
           <span className="absolute right-3 top-3.5 text-[10px] text-[var(--text-3)]">Sage</span>

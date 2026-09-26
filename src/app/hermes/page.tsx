@@ -476,8 +476,8 @@ function TaskBoard({
         <Panel className="p-2">
           <EmptyState
             icon={<LayoutGrid className="w-6 h-6" />}
-            title="No tasks on the board"
-            hint="Dispatched work and synced kanban cards will show up here."
+            title="Nenhuma tarefa no quadro"
+            hint="O trabalho enviado e os cards sincronizados do kanban aparecerão aqui."
           />
         </Panel>
       ) : (
@@ -714,8 +714,8 @@ function ActivityFeed({ events }: { events: Ev[] }) {
         <Panel className="p-2">
           <EmptyState
             icon={<ActivityIcon className="w-6 h-6" />}
-            title="No recent activity"
-            hint="Events from Hermes and its agents will stream in here."
+            title="Nenhuma atividade recente"
+            hint="Os eventos do Hermes e dos agentes aparecerão aqui em tempo real."
           />
         </Panel>
       ) : (
@@ -868,8 +868,8 @@ export default function HermesPage() {
             <Panel className="p-2">
               <EmptyState
                 icon={<Inbox className="w-6 h-6" />}
-                title="Nothing awaiting approval."
-                hint="Side-effecting dispatches land here for a one-tap approve."
+                title="Nada aguardando aprovação."
+                hint="Solicitações com efeitos externos aparecerão aqui para aprovação rápida."
               />
             </Panel>
           ) : (
