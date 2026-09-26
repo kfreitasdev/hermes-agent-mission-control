@@ -12,7 +12,7 @@ const HERMES_KANBAN_BOARD = process.env.HERMES_BOARD || "default";
 
 const HERMES_KANBAN_DEMO_TASKS = [
   { id: "demo-1", title: "Research Hermes outliers and keywords", assignee: "nova", status: "done", priority: 100 },
-  { id: "demo-2", title: "Create Notion To Film trigger", assignee: "hermes", status: "done", priority: 95 },
+  { id: "demo-2", title: "Create content trigger", assignee: "hermes", status: "done", priority: 95 },
   { id: "demo-3", title: "Build Kanban demo in Hermy HQ", assignee: "coding-agent", status: "running", priority: 90 },
   { id: "demo-4", title: "Write final filming script", assignee: "nova", status: "ready", priority: 85 },
   { id: "demo-5", title: "Prepare upload SEO package", assignee: "nova", status: "ready", priority: 80 },

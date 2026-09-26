@@ -1,53 +1,55 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-// This would connect to Notion API
-// For now, return mock data
+const TASK_STATUSES = new Set(["Not started", "Approved", "In progress", "Done"]);
 
-const NOTION_API_KEY = process.env.NOTION_API_KEY;
-const DATABASE_ID = "1264208d-f768-4604-b4cb-09f4d6fd41e3"; // Max's Tasks DB
+function normalizeStatus(status: string | null | undefined): string {
+  switch (status) {
+    case "active":
+      return "In progress";
+    case "completed":
+      return "Done";
+    case "pending":
+      return "Not started";
+    default:
+      return TASK_STATUSES.has(status ?? "") ? status! : "Not started";
+  }
+}
+
+function normalizePriority(priority: string | null | undefined): string {
+  const value = priority?.toLowerCase();
+  if (value === "high") return "High";
+  if (value === "low") return "Low";
+  return "Medium";
+}
+
+function toTask(mission: {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  description: string;
+  createdAt: Date;
+}) {
+  return {
+    id: mission.id,
+    name: mission.title,
+    status: normalizeStatus(mission.status),
+    priority: normalizePriority(mission.priority),
+    category: "Mission",
+    description: mission.description,
+    dueDate: null,
+    createdAt: mission.createdAt.toISOString(),
+  };
+}
 
 export async function GET() {
   try {
-    if (!NOTION_API_KEY) {
-      // Return mock data if no API key
-      return NextResponse.json({
-        tasks: [
-          { id: "1", name: "Review Polymarket bot strategy", status: "In progress", priority: "High", category: "Research" },
-          { id: "2", name: "Build Hermy HQ dashboard", status: "In progress", priority: "High", category: "Content" },
-          { id: "3", name: "Daily brief automation", status: "Approved", priority: "Medium", category: "Admin" },
-        ],
-      });
-    }
-
-    const res = await fetch(`https://api.notion.com/v1/databases/${DATABASE_ID}/query`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${NOTION_API_KEY}`,
-        "Notion-Version": "2022-06-28",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        filter: {
-          property: "Status",
-          status: {
-            does_not_equal: "Done",
-          },
-        },
-      }),
+    const missions = await prisma.mission.findMany({
+      orderBy: { createdAt: "desc" },
     });
 
-    const data = await res.json();
-    
-    const tasks = data.results?.map((page: any) => ({
-      id: page.id,
-      name: page.properties.Name?.title?.[0]?.plain_text || "Untitled",
-      status: page.properties.Status?.status?.name || "Not started",
-      priority: page.properties.Priority?.select?.name || "",
-      category: page.properties.Category?.select?.name || "",
-      dueDate: page.properties["Due Date"]?.date?.start || null,
-    })) || [];
-
-    return NextResponse.json({ tasks });
+    return NextResponse.json({ tasks: missions.map(toTask) });
   } catch (error) {
     console.error("Tasks API error:", error);
     return NextResponse.json({ error: "Failed to fetch tasks" }, { status: 500 });
@@ -56,30 +58,26 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { name, status } = await req.json();
-    
-    if (!NOTION_API_KEY) {
-      return NextResponse.json({ success: true, message: "Mock - would create task in Notion" });
+    const body = await req.json();
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+
+    if (!name) {
+      return NextResponse.json({ error: "Task name is required" }, { status: 400 });
     }
 
-    const res = await fetch("https://api.notion.com/v1/pages", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${NOTION_API_KEY}`,
-        "Notion-Version": "2022-06-28",
-        "Content-Type": "application/json",
+    const status = TASK_STATUSES.has(body.status) ? body.status : "Not started";
+    const priority = normalizePriority(body.priority);
+    const mission = await prisma.mission.create({
+      data: {
+        agentId: "human",
+        title: name,
+        description: name,
+        status,
+        priority,
       },
-      body: JSON.stringify({
-        parent: { database_id: DATABASE_ID },
-        properties: {
-          Name: { title: [{ text: { content: name } }] },
-          Status: { status: { name: status || "Not started" } },
-        },
-      }),
     });
 
-    const data = await res.json();
-    return NextResponse.json({ success: true, task: data });
+    return NextResponse.json({ success: true, task: toTask(mission) }, { status: 201 });
   } catch (error) {
     console.error("Create task error:", error);
     return NextResponse.json({ error: "Failed to create task" }, { status: 500 });
@@ -88,28 +86,23 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { id, status } = await req.json();
-    
-    if (!NOTION_API_KEY) {
-      return NextResponse.json({ success: true, message: "Mock - would update task in Notion" });
+    const body = await req.json();
+    const id = typeof body.id === "string" ? body.id : "";
+    const status = typeof body.status === "string" ? body.status : "";
+
+    if (!id || !TASK_STATUSES.has(status)) {
+      return NextResponse.json({ error: "Valid task id and status are required" }, { status: 400 });
     }
 
-    const res = await fetch(`https://api.notion.com/v1/pages/${id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${NOTION_API_KEY}`,
-        "Notion-Version": "2022-06-28",
-        "Content-Type": "application/json",
+    const mission = await prisma.mission.update({
+      where: { id },
+      data: {
+        status,
+        completedAt: status === "Done" ? new Date() : null,
       },
-      body: JSON.stringify({
-        properties: {
-          Status: { status: { name: status } },
-        },
-      }),
     });
 
-    const data = await res.json();
-    return NextResponse.json({ success: true, task: data });
+    return NextResponse.json({ success: true, task: toTask(mission) });
   } catch (error) {
     console.error("Update task error:", error);
     return NextResponse.json({ error: "Failed to update task" }, { status: 500 });

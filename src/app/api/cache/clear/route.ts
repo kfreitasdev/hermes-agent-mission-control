@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET;
-const CACHE_KEYS = ['notion_clients_monthly', 'mcf_monthly', 'ltv_monthly'];
+const CACHE_KEYS = ['mcf_monthly', 'ltv_monthly'];
 
 export async function POST(req: Request) {
   const secret = req.headers.get('x-internal-secret');

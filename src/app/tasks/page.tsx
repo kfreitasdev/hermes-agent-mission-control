@@ -101,7 +101,7 @@ export default function TasksPage() {
       <div className="relative z-10 h-full flex flex-col w-full mx-auto pt-4 pb-16">
         <div className="hq-rise flex justify-between items-end gap-4 mb-10" style={rise(0)}>
           <div>
-            <div className="eyebrow mb-2">Synced with Notion</div>
+            <div className="eyebrow mb-2">Operational tasks</div>
             <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Tasks</h1>
           </div>
           <Button variant="primary" onClick={() => setShowAddTask(true)}>+ Add Task</Button>

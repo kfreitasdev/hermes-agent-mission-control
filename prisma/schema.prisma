@@ -334,7 +334,6 @@ model SavedTitle {
 
 model ClientPulseClient {
   id                   String                @id @default(cuid())
-  notionPageId         String?               @unique
   clientName           String
   status               String?
   services             Json                  @default("[]")

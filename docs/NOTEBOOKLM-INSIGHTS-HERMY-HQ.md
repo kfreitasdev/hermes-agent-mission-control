@@ -70,7 +70,7 @@ A finalidade desta análise não é reproduzir o dashboard do vídeo isoladament
 3. Ações externas ficam em `awaiting_approval`; tarefas seguras seguem para `queued`.
 4. A bridge faz claim transacional, executa o Hermes e grava evento, resultado ou erro.
 5. O Mission mostra a próxima ação e permite aprovação/rejeição com trilha de auditoria.
-6. Depois do read-back, um adapter explícito pode registrar o resultado no Segundo Cérebro, Notion ou outro sistema — sem criar uma segunda fonte de verdade.
+6. Depois do read-back, um adapter explícito pode registrar o resultado no Segundo Cérebro ou outro sistema aprovado — sem criar uma segunda fonte de verdade.
 
 ### Ordem de evolução
 
