@@ -61,7 +61,7 @@ async function hermes(args, { timeout = 30000 } = {}) {
 
 async function emit(kind, title, { detail = null, agent = "hermes", level = "info", meta = null } = {}) {
   await q(
-    `INSERT INTO "AgentEvent" (id, kind, title, detail, agent, level, meta, "createdAt")
+    `INSERT INTO agent_mission.events (id, kind, title, detail, agent, level, meta, created_at)
      VALUES ($1,$2,$3,$4,$5,$6,$7, now())`,
     [randomUUID(), kind, title.slice(0, 200), detail, agent, level, meta ? JSON.stringify(meta) : null]
   );
@@ -69,8 +69,8 @@ async function emit(kind, title, { detail = null, agent = "hermes", level = "inf
 
 async function setStore(key, data) {
   await q(
-    `INSERT INTO "DataStore" (key, data, "updatedAt") VALUES ($1,$2, now())
-     ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, "updatedAt" = now()`,
+    `INSERT INTO agent_mission.data_store (key, data, updated_at) VALUES ($1,$2, now())
+     ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
     [key, JSON.stringify(data)]
   );
 }
@@ -91,11 +91,11 @@ async function mirrorKanban() {
     if (!id) continue;
     seen.add(id);
     await q(
-      `INSERT INTO "HermesTask" (id, board, title, assignee, status, priority, result, "updatedAt", "syncedAt")
+      `INSERT INTO agent_mission.hermes_tasks (id, board, title, assignee, status, priority, result, updated_at, synced_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7, now(), now())
        ON CONFLICT (id) DO UPDATE SET
          title=EXCLUDED.title, assignee=EXCLUDED.assignee, status=EXCLUDED.status,
-         priority=EXCLUDED.priority, result=EXCLUDED.result, "syncedAt"=now()`,
+         priority=EXCLUDED.priority, result=EXCLUDED.result, synced_at=now()`,
       [id, BOARD, String(t.title ?? "untitled").slice(0, 300), t.assignee ?? null,
        String(t.status ?? "todo"), t.priority != null ? Number(t.priority) : null,
        t.result ? String(t.result).slice(0, 2000) : null]
@@ -103,9 +103,9 @@ async function mirrorKanban() {
   }
   // prune tasks that vanished from the board
   if (seen.size) {
-    await q(`DELETE FROM "HermesTask" WHERE board=$1 AND id <> ALL($2::text[])`, [BOARD, [...seen]]);
+    await q(`DELETE FROM agent_mission.hermes_tasks WHERE board=$1 AND id <> ALL($2::text[])`, [BOARD, [...seen]]);
   } else {
-    await q(`DELETE FROM "HermesTask" WHERE board=$1`, [BOARD]);
+    await q(`DELETE FROM agent_mission.hermes_tasks WHERE board=$1`, [BOARD]);
   }
 }
 
@@ -174,19 +174,19 @@ async function mirrorWiki() {
     let raw = ""; try { raw = fs.readFileSync(file, "utf8"); } catch { continue; }
     const { fm, body } = parseEntry(raw);
     await q(
-      `INSERT INTO "HermesMemory" (id, path, type, title, status, confidence, provenance, tags, links, body, "validFrom", "validTo", "updatedAt", "syncedAt")
+      `INSERT INTO agent_mission.memory_entries (id, path, type, title, status, confidence, provenance, tags, links, body, valid_from, valid_to, updated_at, synced_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, now(), now())
        ON CONFLICT (id) DO UPDATE SET path=EXCLUDED.path, type=EXCLUDED.type, title=EXCLUDED.title,
          status=EXCLUDED.status, confidence=EXCLUDED.confidence, provenance=EXCLUDED.provenance,
          tags=EXCLUDED.tags, links=EXCLUDED.links, body=EXCLUDED.body,
-         "validFrom"=EXCLUDED."validFrom", "validTo"=EXCLUDED."validTo", "syncedAt"=now()`,
+         valid_from=EXCLUDED.valid_from, valid_to=EXCLUDED.valid_to, synced_at=now()`,
       [id, rel, fm.type || "fact", fm.title || id, fm.status || "active", fm.confidence || null,
        fm.provenance || null, Array.isArray(fm.tags) ? fm.tags : [], Array.isArray(fm.links) ? fm.links : [],
        body, fm.valid_from || null, fm.valid_to || null]
     );
   }
-  if (seen.size) await q(`DELETE FROM "HermesMemory" WHERE id <> ALL($1::text[])`, [[...seen]]);
-  else await q(`DELETE FROM "HermesMemory"`);
+  if (seen.size) await q(`DELETE FROM agent_mission.memory_entries WHERE id <> ALL($1::text[])`, [[...seen]]);
+  else await q(`DELETE FROM agent_mission.memory_entries`);
 }
 function writeWikiEntry(e) {
   const rel = e.path || `${e.type || "note"}s/${e.id}.md`;
@@ -270,12 +270,12 @@ async function runRequest(r) {
     } else {
       throw new Error(`unknown kind ${r.kind}`);
     }
-    await q(`UPDATE "AgentRequest" SET status='done', result=$2, "finishedAt"=now(), "updatedAt"=now() WHERE id=$1`,
+    await q(`UPDATE agent_mission.requests SET status='done', result=$2, finished_at=now(), updated_at=now() WHERE id=$1`,
       [r.id, result.slice(0, 8000)]);
     await emit("run", `Done: ${r.title}`, { level: "up", detail: result.slice(0, 400), meta: { requestId: r.id } });
   } catch (e) {
     const msg = (e.stderr || e.message || "error").toString().split("\n")[0].slice(0, 600);
-    await q(`UPDATE "AgentRequest" SET status='failed', error=$2, "finishedAt"=now(), "updatedAt"=now() WHERE id=$1`, [r.id, msg]);
+    await q(`UPDATE agent_mission.requests SET status='failed', error=$2, finished_at=now(), updated_at=now() WHERE id=$1`, [r.id, msg]);
     await emit("run", `Failed: ${r.title}`, { level: "down", detail: msg, meta: { requestId: r.id } });
     log("request failed:", r.id, msg);
   }
@@ -290,18 +290,18 @@ async function processQueue() {
   try {
     await client.query("BEGIN");
     const result = await client.query(
-      `SELECT * FROM "AgentRequest"
+      `SELECT * FROM agent_mission.requests
        WHERE status = 'approved'
-          OR (status = 'queued' AND "sideEffecting" = false)
-       ORDER BY "createdAt" ASC
+          OR (status = 'queued' AND side_effecting = false)
+       ORDER BY created_at ASC
        FOR UPDATE SKIP LOCKED
        LIMIT 3`
     );
     rows = result.rows;
     for (const r of rows) {
       await client.query(
-        `UPDATE "AgentRequest"
-         SET status='running', "startedAt"=now(), "updatedAt"=now()
+        `UPDATE agent_mission.requests
+         SET status='running', started_at=now(), updated_at=now()
          WHERE id=$1`,
         [r.id]
       );

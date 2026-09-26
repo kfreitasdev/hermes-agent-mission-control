@@ -36,7 +36,7 @@
 ## Lacunas para produção
 
 - Criar/configurar `.env` apenas no ambiente de execução, com `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, OAuth Google, `ALLOWED_EMAILS` e segredos internos; nenhum desses valores existe neste repositório.
-- Provisionar o Postgres do message bus e aplicar o schema/migrations após revisão. O banco de produção ainda não foi alterado.
+- Migration versionada do namespace `agent_mission` aplicada no Supabase existente; o runtime Prisma/bridge já está sendo adaptado para usar as tabelas isoladas.
 - Instalar a bridge como serviço persistente no servidor/VPS do Hermes e validar o fluxo completo com uma requisição controlada.
 - Definir autorização além da allowlist de e-mail antes de usuários adicionais: papéis, aprovação, auditoria e isolamento por empresa/projeto.
 - Integrar a memória do dashboard ao Segundo Cérebro oficial sem criar uma segunda fonte de verdade.
@@ -75,7 +75,7 @@ A finalidade desta análise não é reproduzir o dashboard do vídeo isoladament
 ### Ordem de evolução
 
 - **P0 — Segurança e isolamento:** concluído nesta etapa no checkout local.
-- **P1 — Operação publicada:** migration versionada para o schema `agent_mission` no repositório `glowryia-console`, DNS de `hermes.glowryia.com`, reverse proxy/HTTPS ou configuração equivalente, OAuth, Postgres gerenciado e bridge persistente.
+- **P1 — Operação publicada:** migration versionada do schema `agent_mission` aplicada; ainda faltam DNS de `hermes.glowryia.com`, reverse proxy/HTTPS ou configuração equivalente, OAuth, ambiente de produção e bridge persistente.
 - **P2 — Integrações controladas:** adapters para Segundo Cérebro, Glowryia Console e notificações; cada adapter terá contrato, permissão, idempotência e read-back.
 - **P3 — Governança ampliada:** RBAC, escopo empresa/projeto, auditoria completa e execução concorrente segura para mais operadores/agentes.
 - **P4 — Inteligência operacional:** cron monitorado, skills versionadas, memória pesquisável, briefs e recomendações com aprovação humana para efeitos externos.

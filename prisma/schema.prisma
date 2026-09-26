@@ -6,6 +6,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public", "agent_mission"]
 }
 
 model Account {
@@ -24,6 +25,8 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+
+  @@schema("public")
 }
 
 model Session {
@@ -32,6 +35,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@schema("public")
 }
 
 model User {
@@ -42,6 +47,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+
+  @@schema("public")
 }
 
 model VerificationToken {
@@ -50,6 +57,8 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+
+  @@schema("public")
 }
 
 model Draft {
@@ -90,6 +99,8 @@ model Draft {
   @@index([tweetId])
   @@index([source])
   @@index([engagementTier])
+
+  @@schema("public")
 }
 
 model TweetMetric {
@@ -102,6 +113,8 @@ model TweetMetric {
   createdAt   DateTime  @default(now())
 
   @@index([draftId])
+
+  @@schema("public")
 }
 
 model Idea {
@@ -116,12 +129,16 @@ model Idea {
 
   @@index([category])
   @@index([type])
+
+  @@schema("public")
 }
 
 model ContentCalendar {
   id   String @id @default(cuid())
   week String @unique
   data Json
+
+  @@schema("public")
 }
 
 model YoutubeIdea {
@@ -140,6 +157,8 @@ model YoutubeIdea {
   createdAt         DateTime @default(now())
 
   @@index([status])
+
+  @@schema("public")
 }
 
 model YoutubeScript {
@@ -169,6 +188,8 @@ model YoutubeScript {
   updatedAt       DateTime @updatedAt
 
   @@index([status])
+
+  @@schema("public")
 }
 
 model YoutubeFeedback {
@@ -177,6 +198,8 @@ model YoutubeFeedback {
   reason String?
   type   String?
   date   DateTime @default(now())
+
+  @@schema("public")
 }
 
 model LongformScript {
@@ -212,6 +235,8 @@ model LongformScript {
   updatedAt        DateTime @updatedAt
 
   @@index([status])
+
+  @@schema("public")
 }
 
 model AgentState {
@@ -226,6 +251,8 @@ model AgentState {
   currentTask    String?
   recentActivity Json?     @default("[]")
   updatedAt      DateTime  @updatedAt
+
+  @@schema("public")
 }
 
 model AgentBusMessage {
@@ -240,12 +267,16 @@ model AgentBusMessage {
 
   @@index([toAgent, read])
   @@index([fromAgent])
+
+  @@schema("public")
 }
 
 model BattleRoyaleBot {
   id        String   @id
   state     Json
   updatedAt DateTime @updatedAt
+
+  @@schema("public")
 }
 
 model ContentRequest {
@@ -255,6 +286,8 @@ model ContentRequest {
   resultDraftIds Json?
   createdAt      DateTime  @default(now())
   completedAt    DateTime?
+
+  @@schema("public")
 }
 
 // ─── Generic Key-Value Store ────────────────────────────────────
@@ -262,34 +295,45 @@ model ContentRequest {
 model DataStore {
   key       String   @id
   data      Json
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @map("updated_at") @updatedAt
+
+  @@map("data_store")
+  @@schema("agent_mission")
 }
 
 // ─── Daily Briefs ───────────────────────────────────────────────
 
 model Brief {
-  id        String   @id @default(cuid())
-  date      String   @unique
+  id        String   @id @default(uuid()) @db.Uuid
+  date      String   @unique @map("date_key")
   content   String   @db.Text
   source    String   @default("brief")
-  createdAt DateTime @default(now())
+  createdAt DateTime @map("created_at") @default(now())
+
+  @@map("briefs")
+  @@schema("agent_mission")
 }
 
 // ─── Missions ───────────────────────────────────────────────────
 
 model Mission {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid()) @db.Uuid
   agentId     String
   title       String
   description String   @db.Text
-  status      String   @default("pending") // pending, active, completed, failed
-  priority    String   @default("medium") // high, medium, low
+  status      String   @default("Not started")
+  priority    String   @default("Medium")
   result      String?  @db.Text
-  createdAt   DateTime @default(now())
-  completedAt DateTime?
+  companyId   String?  @map("company_id") @db.Uuid
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @map("created_at") @default(now())
+  completedAt DateTime? @map("completed_at")
+  updatedAt   DateTime @map("updated_at") @updatedAt
 
   @@index([agentId])
   @@index([status])
+  @@map("missions")
+  @@schema("agent_mission")
 }
 
 // ─── Articles ───────────────────────────────────────────────────
@@ -318,6 +362,8 @@ model Article {
   @@index([status])
   @@index([track])
   @@index([scheduledDate])
+
+  @@schema("public")
 }
 
 model SavedTitle {
@@ -328,6 +374,8 @@ model SavedTitle {
   createdAt DateTime @default(now())
 
   @@index([track])
+
+  @@schema("public")
 }
 
 // ─── Client Pulse Telegram Bot ─────────────────────────────────
@@ -351,6 +399,8 @@ model ClientPulseClient {
   @@index([status])
   @@index([clientName])
   @@index([productManagerName])
+
+  @@schema("public")
 }
 
 model ClientPulseChat {
@@ -369,6 +419,8 @@ model ClientPulseChat {
 
   @@index([linkedClientId])
   @@index([status])
+
+  @@schema("public")
 }
 
 model ClientPulseMessage {
@@ -393,6 +445,8 @@ model ClientPulseMessage {
   @@index([telegramChatId, sentAt])
   @@index([chatId, sentAt])
   @@index([needsReply])
+
+  @@schema("public")
 }
 
 model ClientPulseAnalysis {
@@ -418,6 +472,8 @@ model ClientPulseAnalysis {
   @@index([clientId, analyzedAt])
   @@index([category])
   @@index([overallScore])
+
+  @@schema("public")
 }
 
 model ClientPulseAlert {
@@ -440,6 +496,8 @@ model ClientPulseAlert {
   @@index([severity])
   @@index([sentAt])
   @@index([acknowledgedAt])
+
+  @@schema("public")
 }
 
 // ─── Hermes bus (Hermy HQ website ↔ Hermes on the Mac mini) ─────
@@ -448,37 +506,48 @@ model ClientPulseAlert {
 // mirrors kanban tasks + activity back into HermesTask / AgentEvent.
 
 model AgentRequest {
-  id            String    @id @default(cuid())
+  id            String    @id @default(uuid()) @db.Uuid
   origin        String    @default("web")     // "web" | "hermes"
   kind          String    @default("oneshot") // "oneshot" | "kanban" | "chat"
   title         String
   prompt        String?
-  sideEffecting Boolean   @default(false)
+  sideEffecting Boolean   @map("side_effecting") @default(false)
   status        String    @default("queued")  // queued | awaiting_approval | approved | running | done | failed | rejected
   result        String?
   error         String?
-  hermesTaskId  String?
-  decidedAt     DateTime?
-  startedAt     DateTime?
-  finishedAt    DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  hermesTaskId  String?   @map("hermes_task_id")
+  metadata      Json      @default("{}")
+  companyId     String?   @map("company_id") @db.Uuid
+  clientId      String?   @map("client_id") @db.Uuid
+  projectId     String?   @map("project_id") @db.Uuid
+  decidedAt     DateTime? @map("decided_at")
+  startedAt     DateTime? @map("started_at")
+  finishedAt    DateTime? @map("finished_at")
+  createdAt     DateTime  @map("created_at") @default(now())
+  updatedAt     DateTime  @map("updated_at") @updatedAt
+  revision      Int       @default(0)
+  idempotencyKey String?  @map("idempotency_key")
 
   @@index([status])
   @@index([createdAt])
+  @@map("requests")
+  @@schema("agent_mission")
 }
 
 model AgentEvent {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid()) @db.Uuid
+  requestId String?  @map("request_id") @db.Uuid
   kind      String   @default("activity") // activity | run | status | memory
   title     String
   detail    String?
   agent     String?
   level     String   @default("info")     // info | up | warn | down
   meta      Json?
-  createdAt DateTime @default(now())
+  createdAt DateTime @map("created_at") @default(now())
 
   @@index([createdAt])
+  @@map("events")
+  @@schema("agent_mission")
 }
 
 model HermesTask {
@@ -489,11 +558,13 @@ model HermesTask {
   status    String   @default("todo")
   priority  Int?
   result    String?
-  updatedAt DateTime @default(now())
-  syncedAt  DateTime @updatedAt
+  updatedAt DateTime @map("updated_at") @default(now())
+  syncedAt  DateTime @map("synced_at") @updatedAt
 
   @@index([board])
   @@index([status])
+  @@map("hermes_tasks")
+  @@schema("agent_mission")
 }
 
 // ─── Hermes Memory Wiki (warm tier — git-tracked markdown, mirrored) ─────
@@ -508,11 +579,13 @@ model HermesMemory {
   tags       String[]
   links      String[]
   body       String    @default("")
-  validFrom  DateTime?
-  validTo    DateTime?
-  updatedAt  DateTime  @default(now())
-  syncedAt   DateTime  @updatedAt
+  validFrom  DateTime? @map("valid_from")
+  validTo    DateTime? @map("valid_to")
+  updatedAt  DateTime  @map("updated_at") @default(now())
+  syncedAt   DateTime  @map("synced_at") @updatedAt
 
   @@index([type])
   @@index([status])
+  @@map("memory_entries")
+  @@schema("agent_mission")
 }

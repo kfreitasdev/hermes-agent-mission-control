@@ -74,13 +74,16 @@ Then set the **Hermes / bridge** group: `HERMES_BOARD`, `HERMES_BIN`, `HERMES_WI
 (`openssl rand -hex 32` each). Leave the **Optional** groups blank unless the
 operator wants those features now.
 
-### Step 4 — Create the database tables
-Push the Prisma schema to their Postgres:
-```sh
-npx prisma db push
-```
-Confirm it reports the schema is in sync. If it fails, the `DATABASE_URL` is almost
-always the cause — recheck it with the operator.
+### Step 4 — Use the existing Supabase schema
+For the Glowryia deployment, **do not run `npx prisma db push`**. The shared Supabase
+project already owns the canonical tables in `public`, and the Agent Mission tables
+are versioned in the Glowryia Console repository under the isolated `agent_mission`
+schema. The migrations are applied by the control-plane rollout, not by the Mission
+web process.
+
+Confirm that the runtime uses a direct PostgreSQL URL for the approved Supabase
+project and that the `agent_mission` tables are present. Never point this checkout at
+the shared project and use Prisma to create or rename tables.
 
 ### Step 5 — Run locally to verify
 ```sh

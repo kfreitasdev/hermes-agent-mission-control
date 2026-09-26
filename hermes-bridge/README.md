@@ -1,10 +1,10 @@
 # Hermes Bridge
 
-Two-way sync between **Hermy HQ** (the deployed website) and **Hermes** (your local agent on the Mac mini), using the shared Postgres as a message bus. Nothing is exposed to the internet — the bridge only needs outbound access to Postgres and the local `hermes` CLI.
+Two-way sync between **Hermy HQ** (the deployed website) and **Hermes** (your local agent on the Mac mini), using the `agent_mission` schema in the shared Supabase/Postgres project as a message bus. Nothing is exposed to the internet — the bridge only needs outbound access to Postgres and the local `hermes` CLI.
 
 ```
-website  ──insert AgentRequest──▶  Postgres  ◀──poll & run──  bridge ──▶ hermes CLI
-website  ◀──read HermesTask/────   Postgres  ◀──mirror───────  bridge ◀── hermes CLI
+website  ──insert requests──────▶  agent_mission  ◀──poll & run──  bridge ──▶ hermes CLI
+website  ◀──read projections────  schema         ◀──mirror───────  bridge ◀── hermes CLI
              AgentEvent/DataStore
 ```
 
@@ -35,7 +35,7 @@ website  ◀──read HermesTask/────   Postgres  ◀──mirror──
 ## Config (env)
 | var | default | meaning |
 |---|---|---|
-| `DATABASE_URL` | — (required) | same Postgres the website uses |
+| `DATABASE_URL` | — (required) | direct Postgres URL for the same Supabase project; never a Prisma Accelerate URL |
 | `HERMES_BOARD` | `default` | kanban board slug to mirror |
 | `HERMES_BIN` | `hermes` | path to the CLI if not on PATH |
 | `BRIDGE_POLL_MS` | `5000` | how often to check for new requests |
@@ -44,5 +44,5 @@ website  ◀──read HermesTask/────   Postgres  ◀──mirror──
 
 ## Notes / assumptions
 - CLI arg shapes (`hermes kanban create <title>`, `hermes cron create <schedule> <prompt>`) are best-effort for Hermes v0.17.x — if your build differs, tweak `runRequest()` in `bridge.mjs`.
-- The bridge writes to Postgres with plain SQL, so it doesn't need Prisma.
+- The bridge writes to `agent_mission.*` with plain SQL, so it doesn't need Prisma. Never run `prisma db push` against the shared project.
 - Safe by design: side-effecting work waits for your approval in the website's Approval Inbox before the bridge will touch it.
