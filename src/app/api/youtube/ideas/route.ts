@@ -18,7 +18,7 @@ export async function GET() {
 /** Bulk-import or create a single idea. Requires internal secret header. */
 export async function POST(req: NextRequest) {
   const secret = req.headers.get("x-internal-secret");
-  if (secret !== process.env.INTERNAL_API_SECRET) {
+  if (!process.env.INTERNAL_API_SECRET || secret !== process.env.INTERNAL_API_SECRET) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

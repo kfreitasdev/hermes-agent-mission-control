@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 function isAuthorized(request: Request) {
   const secret = process.env.CLIENT_PULSE_ADMIN_SECRET || process.env.CRON_SECRET;
-  if (!secret) return true;
-  return request.headers.get("authorization") === `Bearer ${secret}`;
+  return Boolean(secret && request.headers.get("authorization") === `Bearer ${secret}`);
 }
 
 export async function POST(request: Request) {

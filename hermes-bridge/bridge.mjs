@@ -236,7 +236,6 @@ async function maybeDailyBrief() {
 
 /* ─────────────── PUSH: run website requests via Hermes ─────────────── */
 async function runRequest(r) {
-  await q(`UPDATE "AgentRequest" SET status='running', "startedAt"=now(), "updatedAt"=now() WHERE id=$1`, [r.id]);
   await emit("run", `Started: ${r.title}`, { level: "info", meta: { requestId: r.id, kind: r.kind } });
   try {
     let result = "";
@@ -283,9 +282,37 @@ async function runRequest(r) {
 }
 
 async function processQueue() {
-  const { rows } = await q(
-    `SELECT * FROM "AgentRequest" WHERE status IN ('queued','approved') ORDER BY "createdAt" ASC LIMIT 3`
-  );
+  // Claim work transactionally. A queued side-effecting request is never
+  // executable, even if it was inserted or modified outside the web UI.
+  // SKIP LOCKED also prevents duplicate execution with multiple bridges.
+  const client = await pool.connect();
+  let rows = [];
+  try {
+    await client.query("BEGIN");
+    const result = await client.query(
+      `SELECT * FROM "AgentRequest"
+       WHERE status = 'approved'
+          OR (status = 'queued' AND "sideEffecting" = false)
+       ORDER BY "createdAt" ASC
+       FOR UPDATE SKIP LOCKED
+       LIMIT 3`
+    );
+    rows = result.rows;
+    for (const r of rows) {
+      await client.query(
+        `UPDATE "AgentRequest"
+         SET status='running', "startedAt"=now(), "updatedAt"=now()
+         WHERE id=$1`,
+        [r.id]
+      );
+    }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw e;
+  } finally {
+    client.release();
+  }
   for (const r of rows) await runRequest(r);
 }
 

@@ -5,11 +5,6 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // DEV-ONLY local bypass (never active on Vercel preview/prod builds).
-  if (process.env.NODE_ENV === 'development') {
-    return NextResponse.next();
-  }
-
   // Skip auth for NextAuth routes, assets, login, and public embeddable charts
   if (
     pathname.startsWith('/api/auth/') ||
@@ -28,6 +23,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // Check NextAuth JWT session
+  if (!process.env.NEXTAUTH_SECRET) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Authentication is not configured' }, { status: 503 });
+    }
+    return NextResponse.redirect(new URL('/login?error=configuration', request.url));
+  }
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   if (!token) {
     if (pathname.startsWith('/api/')) {
