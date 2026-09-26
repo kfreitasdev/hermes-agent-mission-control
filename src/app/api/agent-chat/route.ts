@@ -16,13 +16,6 @@ interface AgentChatResponse {
   status?: string;
 }
 
-const CHAT_WAIT_MS = Number(process.env.HERMES_CHAT_WAIT_MS || 25000);
-const CHAT_POLL_MS = 500;
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<AgentChatResponse | { error: string }>> {
@@ -55,30 +48,8 @@ export async function POST(
       },
     });
 
-    const deadline = Date.now() + CHAT_WAIT_MS;
-    while (Date.now() < deadline) {
-      await sleep(CHAT_POLL_MS);
-      const current = await prisma.agentRequest.findUnique({ where: { id: row.id } });
-      if (current?.status === "done") {
-        return NextResponse.json({
-          reply: current.result || "O Profile concluiu sem retornar conteúdo.",
-          agentId: targetProfile,
-          requestId: row.id,
-          status: current.status,
-        });
-      }
-      if (current?.status === "failed") {
-        return NextResponse.json({
-          reply: `O Profile não conseguiu concluir: ${current.error || "erro não informado"}`,
-          agentId: targetProfile,
-          requestId: row.id,
-          status: current.status,
-        });
-      }
-    }
-
     return NextResponse.json({
-      reply: `Solicitação enviada ao Profile ${targetProfile}. O bridge ainda está processando; acompanhe o request ${row.id} no Mission Control.`,
+      reply: `Solicitação enviada ao Profile ${targetProfile}. O bridge processará o request ${row.id}; esta conversa será atualizada quando o resultado estiver disponível.`,
       agentId: targetProfile,
       requestId: row.id,
       status: "queued",

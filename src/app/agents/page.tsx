@@ -140,8 +140,32 @@ function AgentChat({ agent, onClose }: { agent: Agent; onClose: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ agentId: agent.id, message: text, history: msgs }),
       });
-      const d = await r.json() as { reply: string };
-      setMsgs([...newMsgs, { role: "assistant", content: d.reply }]);
+      const d = await r.json() as { reply?: string; requestId?: string; status?: string; error?: string };
+      setMsgs([...newMsgs, { role: "assistant", content: d.reply || d.error || "Request queued." }]);
+      if (d.requestId && d.status === "queued") {
+        void (async () => {
+          for (let attempt = 0; attempt < 120; attempt += 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            try {
+              const poll = await fetch(`/api/hermes/requests/${d.requestId}`);
+              if (!poll.ok) return;
+              const current = (await poll.json()) as { request?: { status: string; result?: string | null; error?: string | null } };
+              const request = current.request;
+              if (!request || !["done", "failed", "rejected"].includes(request.status)) continue;
+              setMsgs((previous) => [
+                ...previous,
+                {
+                  role: "assistant" as const,
+                  content: request.result || request.error || `Request ${request.status}.`,
+                },
+              ]);
+              return;
+            } catch {
+              return;
+            }
+          }
+        })();
+      }
     } catch {
       setMsgs([...newMsgs, { role: "assistant", content: "Sorry, something went wrong. Try again." }]);
     }
