@@ -11,6 +11,7 @@ const requiredTables = [
   "missions",
   "hermes_tasks",
   "memory_entries",
+  "execution_attempts",
   "AgentState",
 ];
 
@@ -46,6 +47,18 @@ try {
     if (row) check(`rls:${table}`, row.relrowsecurity === true, String(row.relrowsecurity));
   }
 
+  const { rows: policyRows } = await pool.query(
+    `SELECT tablename, COUNT(*)::int AS count
+       FROM pg_policies
+      WHERE schemaname='agent_mission' AND tablename = ANY($1::text[])
+      GROUP BY tablename`,
+    [requiredTables],
+  );
+  const policyCounts = new Map(policyRows.map((row) => [row.tablename, row.count]));
+  for (const table of requiredTables) {
+    check(`rls:${table}:policies`, (policyCounts.get(table) || 0) >= 2, `${policyCounts.get(table) || 0} policies`);
+  }
+
   const { rows: stats } = await pool.query(
     `SELECT COUNT(*)::int AS total,
             COUNT(*) FILTER (WHERE status='queued')::int AS queued,
@@ -76,6 +89,17 @@ try {
              ))`,
   );
   check("contract:execution-barrier", invalidExecutionRows[0].count === 0, `${invalidExecutionRows[0].count} invalid executable request(s)`);
+
+  const { rows: attemptGaps } = await pool.query(
+    `SELECT COUNT(*)::int AS count
+       FROM agent_mission.requests r
+       LEFT JOIN agent_mission.execution_attempts a ON a.id=r.execution_attempt_id
+      WHERE (r.status='running' AND r.execution_attempt_id IS NULL)
+         OR (r.execution_attempt_id IS NOT NULL AND a.id IS NULL)
+         OR (a.status='running' AND r.status <> 'running')
+         OR (a.status IN ('done','failed','expired') AND r.status='running')`,
+  );
+  check("contract:execution-attempt-lifecycle", attemptGaps[0].count === 0, `${attemptGaps[0].count} gap(s)`);
 
   const { rows: lifecycleGaps } = await pool.query(
     `SELECT r.id, r.status, r.target_profile
@@ -200,9 +224,9 @@ try {
     `SELECT column_name FROM information_schema.columns
       WHERE table_schema='agent_mission' AND table_name='requests'
         AND column_name = ANY($1::text[])`,
-    [["target_profile", "handoff", "side_effecting", "status", "started_at", "finished_at", "decided_by", "idempotency_scope_key", "idempotency_payload_hash"]],
+    [["target_profile", "handoff", "side_effecting", "status", "started_at", "finished_at", "decided_by", "idempotency_scope_key", "idempotency_payload_hash", "execution_attempt_id"]],
   );
-  check("contract:requests-columns", requestColumns.length === 9, `${requestColumns.length}/9`);
+  check("contract:requests-columns", requestColumns.length === 10, `${requestColumns.length}/10`);
   const { rows: idempotencyIndexes } = await pool.query(
     `SELECT indexdef FROM pg_indexes
       WHERE schemaname='agent_mission' AND tablename='requests'

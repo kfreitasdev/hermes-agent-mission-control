@@ -43,10 +43,23 @@ export async function POST(req: Request) {
   const sideEffecting = kind !== "briefing.generate";
   const handoff = normalizeHandoff(b.handoff);
   const requestedToolsets = b.allowedToolsets ?? (b.metadata && typeof b.metadata === "object" ? b.metadata.allowedToolsets : undefined);
-  const allowedToolsets = new Set(["context_engine", "web", "browser", "terminal", "file", "code_execution", "skills", "memory", "kanban", "cronjob", "notebooklm"]);
+  const allowedToolsets = new Set(["context_engine", "web", "browser", "terminal", "file", "code_execution", "skills", "memory", "kanban", "cronjob", "notebooklm-safe"]);
   if (requestedToolsets !== undefined && (!Array.isArray(requestedToolsets)
       || requestedToolsets.some((item: unknown) => typeof item !== "string" || !allowedToolsets.has(item)))) {
     return NextResponse.json({ error: "unsupported toolset capability" }, { status: 400 });
+  }
+  const orchestrationToolsets = new Set(["kanban", "cronjob", "memory"]);
+  if (requestedProfile !== "glowryia" && Array.isArray(requestedToolsets)
+      && requestedToolsets.some((item: string) => orchestrationToolsets.has(item) || item === "notebooklm-safe")) {
+    return NextResponse.json({ error: "orchestration toolsets must target glowryia" }, { status: 400 });
+  }
+  if (kind === "briefing.generate" && Array.isArray(requestedToolsets)
+      && requestedToolsets.some((item: string) => item !== "context_engine")) {
+    return NextResponse.json({ error: "briefing requests accept only the read-only context_engine toolset" }, { status: 400 });
+  }
+  const promptText = String(b.prompt ?? b.title ?? "");
+  if (requestedProfile !== "glowryia" && /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(promptText)) {
+    return NextResponse.json({ error: "NotebookLM requests must target glowryia" }, { status: 400 });
   }
   const metadata = b.metadata && typeof b.metadata === "object" && !Array.isArray(b.metadata)
     ? { ...b.metadata, ...(requestedToolsets ? { allowedToolsets: requestedToolsets } : {}) }

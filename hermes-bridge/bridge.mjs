@@ -35,6 +35,7 @@ const POLL_MS = Number(process.env.BRIDGE_POLL_MS || 5000);
 const MIRROR_MS = Number(process.env.BRIDGE_MIRROR_MS || 30000);
 const RUN_TIMEOUT_MS = Number(process.env.BRIDGE_RUN_TIMEOUT_MS || 240000);
 const STALE_RUN_MS = Number(process.env.BRIDGE_STALE_RUN_MS || RUN_TIMEOUT_MS + 30000);
+const BRIDGE_ID = process.env.BRIDGE_ID || `bridge:${os.hostname()}:${process.pid}`;
 const WIKI_DIR = process.env.HERMES_WIKI || path.join(os.homedir(), ".hermes", "wiki");
 const BRIEF_PROMPT =
   "You are the operator's chief of staff. Produce today's brief from the supplied context. " +
@@ -45,6 +46,7 @@ const BRIEF_PROMPT =
   "Keep every item short, concrete, and specific. Omit a section if it has nothing. " +
   "Use read-only context only: do not call tools, modify files, create requests, send messages, or perform any external side effect.";
 const PROFILE_IDS = new Set(["glowryia", "max", "nova", "atlas", "lia", "iris", "lex", "pulse"]);
+const ORCHESTRATION_TOOLSETS = new Set(["kanban", "cronjob", "memory"]);
 
 const DB_URL = process.env.DATABASE_URL || "";
 if (!DB_URL) { console.error("DATABASE_URL is required (use the direct postgres:// URL, not a prisma:// Accelerate URL)"); process.exit(1); }
@@ -137,7 +139,7 @@ async function syncAgentState(profile, details) {
     );
   } catch (error) {
     // Agent-state visibility must not be able to interrupt the actual run.
-    log("agent state sync failed:", error.message);
+    log("agent state sync failed:", redactRuntimeError(error.message));
   }
 }
 
@@ -150,7 +152,7 @@ async function emitBestEffort(kind, title, options = {}) {
   try {
     await emit(kind, title, options);
   } catch (error) {
-    log("event emission failed:", error.message);
+    log("event emission failed:", redactRuntimeError(error.message));
   }
 }
 
@@ -168,22 +170,76 @@ async function safeDoneCount(profile) {
   try {
     return await doneCount(profile);
   } catch (error) {
-    log("done count read failed:", profile, error.message);
+    log("done count read failed:", profile, redactRuntimeError(error.message));
     return null;
   }
 }
 
-async function markRequestFailed(id, msg) {
+function redactRuntimeError(value) {
+  return String(value || "error")
+    .replace(/(?:postgres(?:ql)?:\/\/|https?:\/\/)[^\s]+/gi, "[REDACTED_URL]")
+    .replace(/(token|secret|password|api[_-]?key|authorization|cookie|database[_-]?url|connection[_-]?string|dsn)(?:=|:)\s*[^\s,;]+/gi, "$1=[REDACTED]")
+    .replace(/\/root\/[^\s]+/g, "[REDACTED_PATH]")
+    .slice(0, 600);
+}
+
+async function terminalizeRequest(id, status, { result = null, error = null, title, detail, agent, meta } = {}) {
+  const client = await pool.connect();
   try {
-    const result = await q(
+    await client.query("BEGIN");
+    const changed = await client.query(
       `UPDATE agent_mission.requests
-          SET status='failed', error=$2, finished_at=now(), updated_at=now()
-        WHERE id=$1 AND status='running'`,
-      [id, msg],
+          SET status=$2, result=$3, error=$4, finished_at=now(), updated_at=now()
+        WHERE id=$1 AND status='running'
+        RETURNING execution_attempt_id`,
+      [id, status, result, error ? redactRuntimeError(error) : null],
     );
-    return result.rowCount === 1;
+    if (changed.rowCount !== 1) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+    const attemptId = changed.rows[0]?.execution_attempt_id;
+    if (attemptId) {
+      const finishedAttempt = await client.query(
+        `UPDATE agent_mission.execution_attempts
+            SET status=$2, result=$3, error=$4, finished_at=now(), updated_at=now()
+          WHERE id=$1 AND status='running'`,
+        [attemptId, status, result, error ? redactRuntimeError(error) : null],
+      );
+      if (finishedAttempt.rowCount !== 1) throw new Error("execution attempt was not running");
+    }
+    const eventMeta = { ...(meta && typeof meta === "object" ? meta : {}), executionAttemptId: attemptId || null };
+    await client.query(
+      `INSERT INTO agent_mission.events (id, request_id, kind, title, detail, agent, level, meta, created_at)
+       VALUES ($1,$2,'run',$3,$4,$5,$6,$7,now())`,
+      [
+        randomUUID(), id, String(title || status).slice(0, 200),
+        detail ? redactRuntimeError(detail) : null,
+        agent || "hermes", status === "done" ? "up" : "down",
+        JSON.stringify(eventMeta),
+      ],
+    );
+    await client.query("COMMIT");
+    return true;
+  } catch (errorValue) {
+    try { await client.query("ROLLBACK"); } catch { /* preserve original failure */ }
+    throw errorValue;
+  } finally {
+    client.release();
+  }
+}
+
+async function markRequestFailed(id, msg, options = {}) {
+  try {
+    return await terminalizeRequest(id, "failed", {
+      error: redactRuntimeError(msg),
+      title: options.title || "Failed",
+      detail: options.detail || msg,
+      agent: options.agent,
+      meta: options.meta,
+    });
   } catch (error) {
-    log("request failure persistence failed:", id, error.message);
+    log("request failure persistence failed:", id, redactRuntimeError(error.message));
     return false;
   }
 }
@@ -212,7 +268,7 @@ async function mirrorKanban() {
     const out = await hermes(["-p", "glowryia", "kanban", "--board", BOARD, "list", "--json"], { timeout: 15000 });
     const parsed = JSON.parse(out || "[]");
     tasks = Array.isArray(parsed) ? parsed : parsed.tasks || [];
-  } catch (e) { log("kanban list failed:", e.message.split("\n")[0]); return; }
+  } catch (e) { log("kanban list failed:", redactRuntimeError(e.message)); return; }
 
   const seen = new Set();
   for (const t of tasks) {
@@ -243,7 +299,7 @@ async function mirrorCrons() {
     const out = await hermes(["-p", "glowryia", "cron", "list", "--all"], { timeout: 15000 });
     const lines = out.split("\n").map((l) => l.trimEnd()).filter(Boolean);
     await setStore("hermes-crons", { jobs: lines, raw: out.slice(0, 8000), syncedAt: new Date().toISOString() });
-  } catch (e) { log("cron list failed:", e.message.split("\n")[0]); }
+  } catch (e) { log("cron list failed:", redactRuntimeError(e.message)); }
 }
 
 async function mirrorCost() {
@@ -263,7 +319,7 @@ async function mirrorHealth() {
     detail = out.slice(0, 4000);
     online = /online|running|connected/i.test(out);
     gateway = /gateway[^\n]*(running|online)/i.test(out) ? "running" : "stopped";
-  } catch (e) { detail = e.message.split("\n")[0]; }
+  } catch (e) { detail = redactRuntimeError(e.message); }
   await setStore("hermes-health", { online, gateway, detail, lastSeen: new Date().toISOString() });
 }
 
@@ -458,8 +514,13 @@ async function generateBriefing() {
   } catch {
     throw new Error("briefing result was not valid JSON");
   }
+  const validSections = Array.isArray(brief?.sections)
+    && brief.sections.every((section) => section && typeof section === "object"
+      && typeof section.label === "string"
+      && Array.isArray(section.items)
+      && section.items.every((item) => typeof item === "string"));
   if (!brief || typeof brief !== "object" || typeof brief.greeting !== "string"
-      || typeof brief.summary !== "string" || !Array.isArray(brief.sections)) {
+      || typeof brief.summary !== "string" || !validSections) {
     throw new Error("briefing result did not match the required JSON contract");
   }
   brief.generatedAt = new Date().toISOString();
@@ -472,7 +533,9 @@ function profilePrompt(r) {
   if (!PROFILE_IDS.has(profile)) throw new Error(`unknown Hermes Profile: ${profile}`);
   const handoff = r.handoff && typeof r.handoff === "object" ? r.handoff : {};
   const taskText = String(r.prompt || r.title || "");
-  const notebookRequest = /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(taskText);
+  const metadata = r.metadata && typeof r.metadata === "object" && !Array.isArray(r.metadata) ? r.metadata : {};
+  const notebookRequest = /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(taskText)
+    || (Array.isArray(metadata.allowedToolsets) && metadata.allowedToolsets.includes("notebooklm-safe"));
   const authorization = r.status === "approved"
     ? "Esta solicitação foi aprovada explicitamente. Execute a operação solicitada usando as ferramentas disponíveis, limitada ao escopo da tarefa."
     : "Esta solicitação não está autorizada para efeitos externos; produza somente uma análise.";
@@ -562,20 +625,51 @@ function cronEditArgs(a) {
 }
 
 function requestToolsets(r) {
+  const profile = String(r.target_profile || "glowryia");
   const taskText = String(r.prompt || r.title || "");
-  if (/\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(taskText)) return ["notebooklm-safe"];
+  const notebookRequest = /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(taskText);
+  if (notebookRequest && profile !== "glowryia") throw new Error("NotebookLM requests must target the Glowryia orchestrator");
+  if (notebookRequest) return ["notebooklm-safe"];
   const metadata = r.metadata && typeof r.metadata === "object" && !Array.isArray(r.metadata) ? r.metadata : {};
   const requested = Array.isArray(metadata.allowedToolsets) ? metadata.allowedToolsets : [];
   const allowed = new Set(["context_engine", "web", "browser", "terminal", "file", "code_execution", "skills", "memory", "kanban", "cronjob", "notebooklm-safe"]);
   if (requested.some((item) => typeof item !== "string" || !allowed.has(item))) {
     throw new Error("request contains an unsupported toolset capability");
   }
+  if (profile !== "glowryia" && requested.some((item) => ORCHESTRATION_TOOLSETS.has(item))) {
+    throw new Error("orchestration toolsets must target the Glowryia Profile");
+  }
+  if (profile !== "glowryia" && requested.includes("notebooklm-safe")) {
+    throw new Error("NotebookLM toolset must target the Glowryia Profile");
+  }
   return requested.length ? [...new Set(requested)] : ["context_engine"];
 }
 
-async function validateExternalResult(request, result) {
+async function captureNotebookSnapshot() {
+  const python = process.env.NOTEBOOKLM_PYTHON || "/root/.local/share/uv/tools/notebooklm-skill/bin/python";
+  const snapshotScript = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url))), "scripts", "notebooklm-snapshot.py");
+  try {
+    const { stdout } = await execFileP(python, [snapshotScript], {
+      timeout: 60000,
+      maxBuffer: 200000,
+      env: { ...process.env, NOTEBOOKLM_PROFILE: process.env.NOTEBOOKLM_PROFILE || "default" },
+    });
+    const snapshot = JSON.parse(stdout.trim());
+    if (!Array.isArray(snapshot.notebooks) || !snapshot.sources || typeof snapshot.sources !== "object") {
+      throw new Error("invalid NotebookLM snapshot contract");
+    }
+    return snapshot;
+  } catch (error) {
+    throw new Error(`NotebookLM pre-operation snapshot failed: ${redactRuntimeError(error.stderr || error.message)}`);
+  }
+}
+
+async function validateExternalResult(request, result, beforeSnapshot = null) {
   const taskText = String(request.prompt || request.title || "");
-  if (!/\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(taskText)) return result;
+  const metadata = request.metadata && typeof request.metadata === "object" && !Array.isArray(request.metadata) ? request.metadata : {};
+  const safeNotebookToolset = Array.isArray(metadata.allowedToolsets) && metadata.allowedToolsets.includes("notebooklm-safe");
+  const notebookRequest = /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(taskText) || safeNotebookToolset;
+  if (!notebookRequest) return result;
   const requiresSource = /\bnlm_add_source\b|https?:\/\//i.test(taskText) || /\b(?:source|fonte|vídeo|video)\b/i.test(taskText);
   const text = String(result || "").trim();
   const jsonText = text.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
@@ -606,13 +700,36 @@ async function validateExternalResult(request, result) {
       env: { ...process.env, NOTEBOOKLM_PROFILE: process.env.NOTEBOOKLM_PROFILE || "default" },
     })).stdout.trim();
   } catch (error) {
-    throw new Error(`NotebookLM read-back failed: ${(error.stderr || error.message || "unknown error").toString().split("\\n")[0]}`);
+    throw new Error(`NotebookLM read-back failed: ${redactRuntimeError(error.stderr || error.message)}`);
   }
   let confirmed;
   try { confirmed = JSON.parse(readback); } catch { throw new Error("NotebookLM read-back returned invalid JSON"); }
   if (confirmed.status !== "completed" || confirmed.notebook_id !== String(notebookId)
       || (sourceId && confirmed.source_id !== String(sourceId))) {
     throw new Error("NotebookLM read-back did not confirm the requested IDs");
+  }
+  const confirmedNotebook = confirmed.notebook && typeof confirmed.notebook === "object" ? confirmed.notebook : {};
+  const confirmedSource = confirmed.source && typeof confirmed.source === "object" ? confirmed.source : {};
+  const expectedNotebookTitle = parsed.notebook_title || parsed.notebookTitle || parsed.notebook?.title;
+  const expectedSourceUrl = parsed.source_url || parsed.sourceUrl || parsed.source?.url
+    || (taskText.match(/https?:\/\/[^\s<>"')]+/i) || [])[0];
+  if (expectedNotebookTitle && String(confirmedNotebook.title || "") !== String(expectedNotebookTitle)) {
+    throw new Error("NotebookLM read-back notebook title did not match the requested result");
+  }
+  if (expectedSourceUrl && String(confirmedSource.url || "") !== String(expectedSourceUrl)) {
+    throw new Error("NotebookLM read-back source URL did not match the requested result");
+  }
+  if (beforeSnapshot) {
+    const createRequest = /\b(?:create_notebook|create notebook|criar(?: um)? notebook)\b/i.test(taskText);
+    const addSourceRequest = /\bnlm_add_source\b|\b(?:add source|adicionar fonte)\b/i.test(taskText);
+    if (createRequest && beforeSnapshot.notebooks.includes(String(notebookId))) {
+      throw new Error("NotebookLM returned a pre-existing notebook for a create operation");
+    }
+    const previousSources = Array.isArray(beforeSnapshot.sources[String(notebookId)])
+      ? beforeSnapshot.sources[String(notebookId)] : [];
+    if (addSourceRequest && sourceId && previousSources.includes(String(sourceId))) {
+      throw new Error("NotebookLM returned a pre-existing source for an add operation");
+    }
   }
   return JSON.stringify({ status: "completed", notebook_id: String(notebookId), ...(sourceId ? { source_id: String(sourceId) } : {}) });
 }
@@ -622,29 +739,29 @@ async function runRequest(r) {
   const label = String(r.title || r.prompt || "").slice(0, 300);
   if (!PROFILE_IDS.has(profile)) {
     const msg = `unknown Hermes Profile: ${profile}`;
-    if (!await markRequestFailed(r.id, msg)) return;
-    await emitBestEffort("run", `Rejected: ${r.title}`, {
-      level: "down",
-      requestId: r.id,
+    if (!await markRequestFailed(r.id, msg, {
+      title: `Rejected: ${r.title}`,
       detail: msg,
       meta: { requestId: r.id, targetProfile: profile },
-    });
+    })) return;
     return;
   }
   if (!["oneshot", "chat"].includes(r.kind) && profile !== "glowryia") {
     const msg = `${r.kind} must target the Glowryia orchestrator`;
-    if (!await markRequestFailed(r.id, msg)) return;
-    await emitBestEffort("run", `Rejected: ${r.title}`, {
-      level: "down",
-      agent: profile,
-      requestId: r.id,
+    if (!await markRequestFailed(r.id, msg, {
+      title: `Rejected: ${r.title}`,
       detail: msg,
+      agent: profile,
       meta: { requestId: r.id, targetProfile: profile },
-    });
+    })) return;
     return;
   }
 
   try {
+    const requestMetadata = r.metadata && typeof r.metadata === "object" && !Array.isArray(r.metadata) ? r.metadata : {};
+    const notebookRequest = /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(String(r.prompt || r.title || ""))
+      || (Array.isArray(requestMetadata.allowedToolsets) && requestMetadata.allowedToolsets.includes("notebooklm-safe"));
+    const notebookSnapshot = notebookRequest ? await captureNotebookSnapshot() : null;
     await syncAgentState(profile, {
       status: "working",
       currentTask: label,
@@ -678,12 +795,12 @@ async function runRequest(r) {
         throw new Error(`invalid cron.${op} request: id/name and required arguments are missing`);
       }
       result = (await hermes(["-p", "glowryia", ...argv], { timeout: 20000 })).trim();
-      await mirrorCrons().catch((error) => log("cron mirror after mutation failed:", error.message));
+      await mirrorCrons().catch((error) => log("cron mirror after mutation failed:", redactRuntimeError(error.message)));
     } else if (r.kind === "memory.write") {
       const e = JSON.parse(r.prompt || "{}");
       const rel = writeWikiEntry(e);
       await gitCommitWiki(`wiki: update ${rel} (via dashboard)`);
-      await mirrorWiki().catch((error) => log("wiki mirror after write failed:", error.message));
+      await mirrorWiki().catch((error) => log("wiki mirror after write failed:", redactRuntimeError(error.message)));
       result = `wrote ${rel}`;
     } else if (r.kind === "briefing.generate") {
       await generateBriefing();
@@ -691,57 +808,49 @@ async function runRequest(r) {
     } else {
       throw new Error(`unknown kind ${r.kind}`);
     }
-    result = await validateExternalResult(r, result);
-    const terminal = await q(
-      `UPDATE agent_mission.requests
-          SET status='done', result=$2, finished_at=now(), updated_at=now()
-        WHERE id=$1 AND status='running'`,
-      [r.id, result.slice(0, 8000)],
-    );
+    result = await validateExternalResult(r, result, notebookSnapshot);
+    const completed = await terminalizeRequest(r.id, "done", {
+      result: result.slice(0, 8000),
+      title: `Done: ${r.title}`,
+      detail: result.slice(0, 400),
+      agent: profile,
+      meta: { requestId: r.id, targetProfile: profile },
+    });
     // A stale-lease recovery may have terminalized this request while the
     // Hermes process was still returning. Do not emit a contradictory Done.
-    if (terminal.rowCount !== 1) {
+    if (!completed) {
       log("request terminal state changed before completion:", r.id);
       return;
     }
-    const completed = await safeDoneCount(profile);
+    const done = await safeDoneCount(profile);
     const completedDetails = {
       status: "idle",
       currentTask: null,
       action: `Concluído: ${label}`,
     };
-    if (completed !== null) completedDetails.tasksCompleted = completed;
+    if (done !== null) completedDetails.tasksCompleted = done;
     try {
       await syncAgentState(profile, completedDetails);
     } catch (stateError) {
-      log("completed AgentState sync failed:", r.id, stateError.message);
+      log("completed AgentState sync failed:", r.id, redactRuntimeError(stateError.message));
     }
-    await emitBestEffort("run", `Done: ${r.title}`, {
-      level: "up",
-      agent: profile,
-      requestId: r.id,
-      detail: result.slice(0, 400),
-      meta: { requestId: r.id, targetProfile: profile },
-    });
   } catch (e) {
     const msg = (e.stderr || e.message || "error").toString().split("\n")[0].slice(0, 600);
-    if (!await markRequestFailed(r.id, msg)) {
-      log("request failure was already terminal or could not be persisted:", r.id, msg);
+    if (!await markRequestFailed(r.id, msg, {
+      title: `Failed: ${r.title}`,
+      detail: msg,
+      agent: profile,
+      meta: { requestId: r.id, targetProfile: profile },
+    })) {
+      log("request failure was already terminal or could not be persisted:", r.id, redactRuntimeError(msg));
       return;
     }
     await syncAgentState(profile, {
       status: "error",
       currentTask: null,
-      action: `Falhou: ${label} — ${msg}`,
+      action: `Falhou: ${label} — ${redactRuntimeError(msg)}`,
     });
-    await emitBestEffort("run", `Failed: ${r.title}`, {
-      level: "down",
-      agent: profile,
-      requestId: r.id,
-      detail: msg,
-      meta: { requestId: r.id, targetProfile: profile },
-    });
-    log("request failed:", r.id, msg);
+    log("request failed:", r.id, redactRuntimeError(msg));
   }
 }
 
@@ -761,12 +870,30 @@ async function processQueue() {
               finished_at=now(),
               updated_at=now()
         WHERE status='running'
-          AND side_effecting = true
           AND (started_at IS NULL OR started_at < now() - ($1 * interval '1 millisecond'))
-        RETURNING id, title, target_profile`,
+        RETURNING id, title, target_profile, execution_attempt_id`,
       [STALE_RUN_MS],
     );
     expiredSideEffects = expired.rows;
+    for (const expiredRequest of expiredSideEffects) {
+      if (expiredRequest.execution_attempt_id) {
+        await client.query(
+          `UPDATE agent_mission.execution_attempts
+              SET status='expired', error=$2, finished_at=now(), updated_at=now()
+            WHERE id=$1 AND status='running'`,
+          [expiredRequest.execution_attempt_id, "bridge lease expired; manual review required"],
+        );
+      }
+      await client.query(
+        `INSERT INTO agent_mission.events (id, request_id, kind, title, detail, agent, level, meta, created_at)
+         VALUES ($1,$2,'run',$3,$4,$5,'down',$6,now())`,
+        [
+          randomUUID(), expiredRequest.id, `Failed: ${expiredRequest.title}`.slice(0, 200),
+          "bridge lease expired; manual review required", expiredRequest.target_profile,
+          JSON.stringify({ requestId: expiredRequest.id, targetProfile: expiredRequest.target_profile, leaseExpired: true, executionAttemptId: expiredRequest.execution_attempt_id || null }),
+        ],
+      );
+    }
     const result = await client.query(
       `SELECT * FROM agent_mission.requests
        WHERE (status = 'approved' AND side_effecting = true
@@ -782,12 +909,25 @@ async function processQueue() {
     );
     rows = result.rows;
     for (const r of rows) {
+      const attemptId = randomUUID();
+      await client.query(
+        `INSERT INTO agent_mission.execution_attempts
+           (id, request_id, attempt_no, status, claimed_by, lease_expires_at, started_at, created_at, updated_at)
+         SELECT $1, r.id, COALESCE(MAX(a.attempt_no), 0) + 1, 'running', $2,
+                now() + ($3 * interval '1 millisecond'), now(), now(), now()
+           FROM agent_mission.requests r
+           LEFT JOIN agent_mission.execution_attempts a ON a.request_id=r.id
+          WHERE r.id=$4
+          GROUP BY r.id`,
+        [attemptId, BRIDGE_ID, RUN_TIMEOUT_MS + 30000, r.id],
+      );
       await client.query(
         `UPDATE agent_mission.requests
-         SET status='running', started_at=now(), updated_at=now()
+         SET status='running', started_at=now(), execution_attempt_id=$2, updated_at=now()
          WHERE id=$1`,
-        [r.id]
+        [r.id, attemptId]
       );
+      r.execution_attempt_id = attemptId;
     }
     await client.query("COMMIT");
   } catch (e) {
@@ -795,22 +935,6 @@ async function processQueue() {
     throw e;
   } finally {
     client.release();
-  }
-  for (const expired of expiredSideEffects) {
-    await emitBestEffort("run", `Started: ${expired.title}`, {
-      level: "info",
-      agent: expired.target_profile,
-      requestId: expired.id,
-      detail: "Recovered an execution whose bridge lease expired before completion",
-      meta: { requestId: expired.id, targetProfile: expired.target_profile, recovered: true },
-    });
-    await emitBestEffort("run", `Failed: ${expired.title}`, {
-      level: "down",
-      agent: expired.target_profile,
-      requestId: expired.id,
-      detail: "bridge lease expired; manual review required",
-      meta: { requestId: expired.id, targetProfile: expired.target_profile, leaseExpired: true },
-    });
   }
   for (const r of rows) await runRequest(r);
 }
@@ -821,12 +945,12 @@ async function mirrorTick() {
   if (mirrorRunning) return;
   mirrorRunning = true;
   try {
-    try { await mirrorKanban(); } catch (e) { log("mirrorKanban err", e.message); }
-    try { await mirrorCrons(); } catch (e) { log("mirrorCrons err", e.message); }
-    try { await mirrorHealth(); } catch (e) { log("mirrorHealth err", e.message); }
-    try { await mirrorAgentStates(); } catch (e) { log("mirrorAgentStates err", e.message); }
-    try { await mirrorWiki(); } catch (e) { log("mirrorWiki err", e.message); }
-    try { await mirrorCost(); } catch (e) { log("mirrorCost err", e.message); }
+    try { await mirrorKanban(); } catch (e) { log("mirrorKanban err", redactRuntimeError(e.message)); }
+    try { await mirrorCrons(); } catch (e) { log("mirrorCrons err", redactRuntimeError(e.message)); }
+    try { await mirrorHealth(); } catch (e) { log("mirrorHealth err", redactRuntimeError(e.message)); }
+    try { await mirrorAgentStates(); } catch (e) { log("mirrorAgentStates err", redactRuntimeError(e.message)); }
+    try { await mirrorWiki(); } catch (e) { log("mirrorWiki err", redactRuntimeError(e.message)); }
+    try { await mirrorCost(); } catch (e) { log("mirrorCost err", redactRuntimeError(e.message)); }
   } finally {
     mirrorRunning = false;
   }
@@ -836,9 +960,9 @@ async function main() {
   log(`hermes-bridge up · board=${BOARD} · poll=${POLL_MS}ms · mirror=${MIRROR_MS}ms`);
   await emit("status", "Bridge connected", { level: "up" });
   await mirrorTick();
-  setInterval(() => mirrorTick().catch((e) => log("mirror loop", e.message)), MIRROR_MS);
+  setInterval(() => mirrorTick().catch((e) => log("mirror loop", redactRuntimeError(e.message))), MIRROR_MS);
   // queue loop
-  const tick = async () => { try { await processQueue(); } catch (e) { log("queue loop", e.message); } finally { setTimeout(tick, POLL_MS); } };
+  const tick = async () => { try { await processQueue(); } catch (e) { log("queue loop", redactRuntimeError(e.message)); } finally { setTimeout(tick, POLL_MS); } };
   tick();
 }
-main().catch((e) => { console.error("fatal", e); process.exit(1); });
+main().catch((e) => { console.error("fatal", redactRuntimeError(e.message)); process.exit(1); });

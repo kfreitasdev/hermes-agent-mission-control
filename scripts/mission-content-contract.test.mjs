@@ -8,6 +8,9 @@ const migrationPath = path.join(root, "../../glowryia-console/supabase/migration
 
 const idempotencyMigrationPath = path.join(root, "../../glowryia-console/supabase/migrations/0027_agent_mission_request_idempotency.sql");
 const decisionMigrationPath = path.join(root, "../../glowryia-console/supabase/migrations/0028_agent_mission_request_decision_audit.sql");
+const queuedMigrationPath = path.join(root, "../../glowryia-console/supabase/migrations/0029_agent_mission_remove_queued_request_state.sql");
+const rlsMigrationPath = path.join(root, "../../glowryia-console/supabase/migrations/0030_agent_mission_default_deny_rls.sql");
+const attemptsMigrationPath = path.join(root, "../../glowryia-console/supabase/migrations/0031_agent_mission_execution_attempts.sql");
 
 const expectedTables = [
   "Draft",
@@ -53,6 +56,29 @@ test("request decisions carry an actor and versioned audit migration", () => {
   assert.equal(fs.existsSync(decisionMigrationPath), true, `missing ${decisionMigrationPath}`);
   const sql = fs.readFileSync(decisionMigrationPath, "utf8");
   assert.match(sql, /add column if not exists decided_by/i);
+});
+test("queued requests are migrated to explicit approval", () => {
+  assert.equal(fs.existsSync(queuedMigrationPath), true, `missing ${queuedMigrationPath}`);
+  const sql = fs.readFileSync(queuedMigrationPath, "utf8");
+  assert.match(sql, /update agent_mission\.requests[\s\S]*set status = 'awaiting_approval'[\s\S]*where status = 'queued'/i);
+  assert.match(sql, /check \([\s\S]*awaiting_approval[\s\S]*rejected/i);
+  assert.doesNotMatch(sql, /'queued'\)\s*;/i);
+});
+
+test("Agent Mission RLS is deny-by-default for user roles", () => {
+  assert.equal(fs.existsSync(rlsMigrationPath), true, `missing ${rlsMigrationPath}`);
+  const sql = fs.readFileSync(rlsMigrationPath, "utf8");
+  assert.match(sql, /enable row level security/i);
+  assert.match(sql, /to anon, authenticated using \(false\) with check \(false\)/i);
+});
+
+test("execution attempts preserve request-to-run lifecycle", () => {
+  assert.equal(fs.existsSync(attemptsMigrationPath), true, `missing ${attemptsMigrationPath}`);
+  const sql = fs.readFileSync(attemptsMigrationPath, "utf8");
+  assert.match(sql, /create table if not exists agent_mission\.execution_attempts/i);
+  assert.match(sql, /request_id uuid not null references agent_mission\.requests/i);
+  assert.match(sql, /lease_expires_at timestamptz/i);
+  assert.match(sql, /add column if not exists execution_attempt_id uuid/i);
 });
 test("legacy Prisma models use the Agent Mission schema", () => {
   const schema = fs.readFileSync(path.join(root, "prisma/schema.prisma"), "utf8");

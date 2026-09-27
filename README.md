@@ -105,11 +105,15 @@ process runs on the machine where Hermes lives.
         └────────────────────────────────────────────────────────┘
 ```
 
-- **Website → agent:** the site inserts an `AgentRequest` with `target_profile` and a structured `handoff`. Requests wait in `awaiting_approval` until you approve them in the inbox; queued rows are never executable by the bridge.
-- **Bridge → agent:** the bridge validates the target against the persistent Hermes fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`), invokes `hermes -p <profile>`, and writes results back. It never runs `awaiting_approval`.
+- **Website → agent:** the site inserts an `AgentRequest` with `target_profile` and a structured `handoff`. Requests wait in `awaiting_approval` until you approve them in the inbox; the legacy `queued` state is migrated and rejected by the database constraint.
+- **Bridge → agent:** the bridge validates the target against the persistent Hermes fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`), creates a durable `execution_attempts` lease, invokes `hermes -p <profile>`, and writes results back. It never runs `awaiting_approval`.
 - **Agent → website:** the bridge mirrors the kanban board (`HermesTask`), cron +
   health (`DataStore`), memory (`HermesMemory`), and activity (`AgentEvent`) back
-  into Postgres, where the website reads them.
+  into Postgres, where the website reads them. Request terminal status, attempt outcome,
+  and lifecycle event are committed together.
+- **Database boundary:** `agent_mission` has RLS enabled with explicit deny policies for
+  `anon`/`authenticated`; the server-side bridge/API operator remains the controlled
+  database writer.
 
 Nothing on your machine is exposed to the internet — the bridge only needs outbound
 access to Postgres and your local `hermes` CLI. See
@@ -251,14 +255,22 @@ No host Hermes, valide e configure assim:
 ```sh
 hermes -p glowryia mcp add notebooklm \
   --command /root/.local/bin/notebooklm-mcp \
+  --env NOTEBOOKLM_PROFILE=default \
   --connect-timeout 60
 
+hermes -p glowryia mcp add notebooklm-safe \
+  --command /root/.local/share/uv/tools/notebooklm-skill/bin/python \
+  --env NOTEBOOKLM_PROFILE=default \
+  --connect-timeout 60 \
+  --args /root/tools_hub/hermes-agent-mission-control/scripts/notebooklm-safe-mcp.py
+
 hermes -p glowryia mcp test notebooklm
+hermes -p glowryia mcp test notebooklm-safe
 notebooklm-auth verify
 npm run audit:notebooklm
 ```
 
-O teste deve mostrar conexão e 13 ferramentas descobertas. O comando de auditoria é
+O servidor `notebooklm` completo é mantido para inspeção manual. O Bridge usa somente `notebooklm-safe`, uma fachada com quatro ferramentas (`create_notebook`, `add_source`, `list` e `list_sources`), sem delete, geração, pesquisa, download ou artefatos. `NOTEBOOKLM_PROFILE=default` identifica a sessão NotebookLM já existente; `glowryia` é o Profile Hermes que executa o request. O teste deve mostrar 13 ferramentas no servidor completo, 4 na fachada segura e autenticação válida. O comando de auditoria é
 somente leitura: não cria notebooks, não adiciona fontes e não usa o navegador.
 Solicitações para criar notebooks devem chamar as ferramentas MCP `nlm_create_notebook`
 e `nlm_add_source`; a resposta só deve ser considerada concluída quando os IDs do

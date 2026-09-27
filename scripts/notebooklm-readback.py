@@ -20,6 +20,7 @@ async def main(notebook_id: str, source_id: str | None) -> None:
     output: dict[str, Any] = {
         "status": "completed",
         "notebook_id": notebook_id,
+        "notebook": notebook,
     }
     if source_id:
         sources_result: dict[str, Any] = await list_sources(notebook_id)
@@ -28,6 +29,7 @@ async def main(notebook_id: str, source_id: str | None) -> None:
         if source is None:
             raise RuntimeError("source_id was not found in NotebookLM read-back")
         output["source_id"] = source_id
+        output["source"] = source
     print(json.dumps(output, ensure_ascii=False))
 
 

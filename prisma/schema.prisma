@@ -336,7 +336,29 @@ model Mission {
   @@schema("agent_mission")
 }
 
-// ─── Articles ───────────────────────────────────────────────────
+model ExecutionAttempt {
+  id              String        @id @db.Uuid
+  requestId       String        @map("request_id") @db.Uuid
+  request         AgentRequest  @relation("RequestAttempts", fields: [requestId], references: [id], onDelete: Cascade)
+  currentRequests AgentRequest[] @relation("CurrentExecutionAttempt")
+  attemptNo       Int           @map("attempt_no")
+  status          String        @default("running")
+  claimedBy       String        @map("claimed_by")
+  leaseExpiresAt  DateTime?     @map("lease_expires_at")
+  startedAt       DateTime      @map("started_at") @default(now())
+  finishedAt      DateTime?     @map("finished_at")
+  result          String?
+  error           String?
+  createdAt       DateTime      @map("created_at") @default(now())
+  updatedAt       DateTime      @map("updated_at") @updatedAt
+
+  @@unique([requestId, attemptNo])
+  @@index([status, leaseExpiresAt])
+  @@map("execution_attempts")
+  @@schema("agent_mission")
+}
+
+// ─── Lifecycle events ─────────────────────────────────────────
 
 model Article {
   id              String    @id @default(uuid())
@@ -514,10 +536,13 @@ model AgentRequest {
   targetProfile String    @map("target_profile") @default("glowryia")
   handoff       Json      @default("{}")
   sideEffecting Boolean   @map("side_effecting") @default(false)
-  status        String    @default("queued")  // queued | awaiting_approval | approved | running | done | failed | rejected
+  status        String    @default("awaiting_approval") // awaiting_approval | approved | running | done | failed | rejected
   result        String?
   error         String?
   hermesTaskId  String?   @map("hermes_task_id")
+  executionAttemptId String?   @map("execution_attempt_id") @db.Uuid
+  executionAttempt   ExecutionAttempt? @relation("CurrentExecutionAttempt", fields: [executionAttemptId], references: [id])
+  attempts          ExecutionAttempt[] @relation("RequestAttempts")
   metadata      Json      @default("{}")
   companyId     String?   @map("company_id") @db.Uuid
   clientId      String?   @map("client_id") @db.Uuid

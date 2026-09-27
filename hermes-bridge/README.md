@@ -10,8 +10,8 @@ website  ◀──read projections────  schema         ◀──mirror�
 
 ## What it does
 - **Pull (Hermes → website):** mirrors the kanban board into `HermesTask`, cron list + health into `DataStore`, projects Profile execution into `AgentState` (`working`/`idle`/`error`, current task, activity and completed count), and writes activity to `AgentEvent`.
-- **Push (website → Hermes):** runs only explicitly `approved` `AgentRequest` rows via the selected persistent Hermes Profile, then writes results back. It never runs `queued` or `awaiting_approval` rows.
-- Each request carries `target_profile` and a structured `handoff` JSON object. The bridge validates the Profile against the local fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`) before invoking `hermes -p <profile> -z ...`.
+- **Push (website → Hermes):** runs only explicitly `approved` `AgentRequest` rows via the selected persistent Hermes Profile, creates an `execution_attempts` lease, then writes request, attempt, and lifecycle event outcomes atomically. The legacy `queued` status is not executable and is removed by migration/constraint.
+- Each request carries `target_profile` and a structured `handoff` JSON object. The bridge validates the Profile against the local fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`) before invoking `hermes -p <profile> -t <allowlisted-tools> -z ...`. Orchestration capabilities and NotebookLM are restricted to `glowryia`.
 
 ## Setup (on the Mac mini)
 1. Copy this folder to the mini (or `git pull` the repo there).
@@ -19,7 +19,7 @@ website  ◀──read projections────  schema         ◀──mirror�
    ```sh
    cd hermes-bridge && npm install
    ```
-3. Make sure `hermes` is on PATH: `which hermes` should resolve (e.g. `~/.local/bin/hermes`).
+3. Make sure `hermes` is on PATH: `which hermes` should resolve (e.g. `~/.local/bin/hermes`). If NotebookLM is enabled, configure the `glowryia` Profile with the read-only-safe execution facade from the repository README; the Bridge must use `notebooklm-safe`, not the full `notebooklm` server, for requests.
 4. Try it once, pointing at your DB:
    ```sh
    DATABASE_URL='postgres://…' HERMES_BOARD=default node bridge.mjs

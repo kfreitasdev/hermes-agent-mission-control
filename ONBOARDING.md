@@ -140,14 +140,25 @@ MCP entry is not automatically inherited by isolated Profiles:
 ```sh
 hermes -p glowryia mcp add notebooklm \
   --command /root/.local/bin/notebooklm-mcp \
+  --env NOTEBOOKLM_PROFILE=default \
   --connect-timeout 60
+hermes -p glowryia mcp add notebooklm-safe \
+  --command /root/.local/share/uv/tools/notebooklm-skill/bin/python \
+  --env NOTEBOOKLM_PROFILE=default \
+  --connect-timeout 60 \
+  --args /root/tools_hub/hermes-agent-mission-control/scripts/notebooklm-safe-mcp.py
 hermes -p glowryia mcp test notebooklm
+hermes -p glowryia mcp test notebooklm-safe
 notebooklm-auth verify
 npm run audit:notebooklm
 ```
-The audit is read-only and must report 13 discovered tools plus valid NotebookLM
-authentication. For notebook creation, approve the request first; the Profile then
-uses `nlm_create_notebook` and `nlm_add_source` rather than opening a browser login.
+The full `notebooklm` server is for manual inspection only. The Bridge uses the
+four-tool `notebooklm-safe` facade for approved requests, while `glowryia` remains
+the Hermes execution Profile and `default` is the existing NotebookLM auth profile.
+The audit is read-only and must report 13 tools on the full server, 4 on the safe
+facade, and valid authentication. For notebook creation, approve the request first;
+the Profile then uses `nlm_create_notebook` and `nlm_add_source` rather than opening
+a browser login.
 
 ### Step 9 — Verify the bridge connected
 Ask the operator to open the website's `/hermes` activity feed and confirm a
