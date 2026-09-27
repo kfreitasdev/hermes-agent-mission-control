@@ -794,12 +794,6 @@ async function runRequest(r) {
       currentTask: label,
       action: `Iniciou: ${label}`,
     });
-    await emitBestEffort("run", `Started: ${r.title}`, {
-      level: "info",
-      agent: profile,
-      requestId: r.id,
-      meta: { requestId: r.id, kind: r.kind, targetProfile: profile },
-    });
 
     let result = "";
     if (r.kind === "oneshot" || r.kind === "chat") {
@@ -955,6 +949,15 @@ async function processQueue() {
         [r.id, attemptId]
       );
       r.execution_attempt_id = attemptId;
+      await client.query(
+        `INSERT INTO agent_mission.events (id, request_id, kind, title, detail, agent, level, meta, created_at)
+         VALUES ($1,$2,'run',$3,$4,$5,'info',$6,now())`,
+        [
+          randomUUID(), r.id, `Started: ${r.title}`.slice(0, 200),
+          "Execution claimed by the Hermes Bridge", r.target_profile,
+          JSON.stringify({ requestId: r.id, kind: r.kind, targetProfile: r.target_profile, executionAttemptId: attemptId }),
+        ],
+      );
     }
     await client.query("COMMIT");
   } catch (e) {
