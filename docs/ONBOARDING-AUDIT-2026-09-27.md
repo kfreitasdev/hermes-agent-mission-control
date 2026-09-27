@@ -4,6 +4,12 @@
 **Referência:** `https://github.com/sharbelxyz/hermes-agent-mission-control/blob/main/ONBOARDING.md`  
 **Ambiente:** `https://hermes.glowryia.com`
 
+## Atualização pós-auditoria
+
+Em 2026-09-27, a migration `0026_agent_mission_content_projection.sql` foi aplicada no Supabase e as telas legadas foram remapeadas do schema `public` para `agent_mission`. O build, os serviços, os endpoints internos e os ciclos de escrita/leitura das telas Ideas, Articles, Saved Titles, Longform, YouTube Scripts, X Content e Client Pulse passaram a ser verificáveis. O Bridge também recebeu tratamento para erros do pool PostgreSQL e foi reiniciado sem novos erros; `NRestarts=0` no estado atual.
+
+O restante deste documento preserva o diagnóstico original para rastreabilidade. Itens que já foram fechados estão marcados na matriz e na seção de fechamento.
+
 ## Resultado executivo
 
 A instalação operacional está concluída e o circuito website ↔ Supabase ↔ Hermes Bridge está ativo. O domínio responde, o OAuth Google está configurado, os dois serviços estão habilitados no systemd e existe evento recente `Bridge connected` no schema `agent_mission`.
@@ -88,11 +94,16 @@ Não há bloqueador P0 para o runtime atual.
    - O checkout local está 16 commits à frente do `origin/main`.
    - As correções estão no servidor e no checkout local, mas ainda não foram publicadas no repositório remoto original. Fazer push somente após revisão explícita do usuário.
 
-## Próxima ordem recomendada
+## Fechamento pós-ajustes
 
-1. Aprovar o contrato de persistência para cada módulo legado.
-2. Criar migrations SQL versionadas e adaptar APIs, começando por Ideas e Articles.
-3. Executar a auditoria autenticada de ciclo completo em todas as telas.
-4. Corrigir o tratamento de reconexão do bridge e validar `NRestarts=0` após observação.
-5. Atualizar o onboarding para documentar o deployment self-hosted real.
-6. Só então declarar o produto completo e decidir se os 16 commits devem ser publicados no repositório remoto.
+- **Fechado:** migration versionada `0026_agent_mission_content_projection.sql` aplicada e lida de volta no Supabase.
+- **Fechado:** Prisma remapeado para `agent_mission` nos modelos de conteúdo e estado que não existiam em `public`.
+- **Fechado:** API smoke com escrita → leitura posterior → atualização → limpeza para Ideas, Articles, Saved Titles, Longform, YouTube Scripts e X Content.
+- **Fechado:** Client Pulse `map-chat` com autorização administrativa e leitura posterior.
+- **Fechado:** Agents, Home, Score e Client Pulse retornando payloads válidos pelo endpoint interno.
+- **Fechado:** pool do Bridge protegido contra evento de erro não tratado; serviço reiniciado com `NRestarts=0`.
+- **Fechado:** README e ONBOARDING atualizados para o deploy self-hosted real, mantendo Vercel como alternativa.
+- **Pendente por decisão de publicação:** push dos commits locais para o repositório remoto original; não foi feito porque o remote aponta para `sharbelxyz/hermes-agent-mission-control`.
+- **Pendente por autorização de conteúdo:** uma gravação real e permanente no Memory/Wiki. O diretório foi inicializado como repositório Git, mas não foi criada memória artificial apenas para teste.
+
+A instalação e os módulos de persistência auditados estão prontos para revisão final. O produto só deve ser chamado de concluído após a decisão sobre publicar os commits no remote e, se desejado, a primeira gravação real de memória operacional.

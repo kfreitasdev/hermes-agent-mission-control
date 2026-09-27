@@ -93,23 +93,27 @@ Ask the operator to open http://localhost:3000 and sign in with a Google account
 listed in `ALLOWED_EMAILS`. Confirm they see the dashboard. Stop the dev server when
 they confirm.
 
-### Step 6 — Deploy to Vercel
-Guide them through:
+### Step 6 — Deploy the website
+The Glowryia instance is self-hosted on Linux behind an HTTPS proxy rather than
+Vercel. After review and migration rollout:
 ```sh
-npm i -g vercel   # if needed
-vercel            # link the project + preview deploy
-vercel --prod     # production
+npm run build
+sudo systemctl restart hermy-hq.service
+sudo systemctl is-active hermy-hq.service
+curl -fI https://<their-domain>/login
 ```
-Then have the operator:
-1. Add **every** variable from `.env` in Vercel → Project → Settings → Environment
-   Variables. Ask them to paste values into Vercel themselves (or read them back so
-   you can guide) — do not fabricate any.
-2. Update `NEXTAUTH_URL` and `NEXT_PUBLIC_BASE_URL` to the production URL, both
-   locally and in Vercel.
-3. In the Google Cloud console, add the authorized redirect URI
-   `https://<their-domain>/api/auth/callback/google`.
-Confirm they can sign in on the production URL.
+Keep the Next.js process on its private host address and expose only the HTTPS
+proxy. The systemd unit must load the same `.env` used by the build/runtime.
 
+Vercel is still a valid alternative for another installation. If Vercel is chosen,
+add every variable from `.env` in Project → Settings → Environment Variables and
+update `NEXTAUTH_URL` and `NEXT_PUBLIC_BASE_URL` to the production URL. In either
+deployment mode, add the exact Google redirect URI:
+```text
+https://<their-domain>/api/auth/callback/google
+```
+Confirm that the production login completes with an email listed in
+`ALLOWED_EMAILS`.
 ### Step 7 — Set up the bridge (connect the bus)
 On this machine (where you, Hermes, live), set up the bridge so the website and you
 share the Postgres bus:

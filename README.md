@@ -188,22 +188,27 @@ npm run dev
 Open <http://localhost:3000> and sign in with a Google account whose email is in
 `ALLOWED_EMAILS`.
 
-### 5. Deploy to Vercel
+### 5. Deploy the website
+
+The Glowryia production instance is self-hosted on Linux behind the HTTPS proxy:
 
 ```sh
-npm i -g vercel   # if you don't have it
-vercel            # link + deploy a preview
-vercel --prod     # production
+npm run build
+sudo systemctl restart hermy-hq.service
+sudo systemctl is-active hermy-hq.service
+curl -fI https://hermes.glowryia.com/login
 ```
 
-Then:
+The service must load the same `.env` used to generate the client, keep the Next.js
+process on its private host address, and expose only the HTTPS proxy. Configure the
+Google OAuth redirect URI for the real domain:
 
-1. Add **every** env var from your `.env` in **Project → Settings → Environment
-   Variables**.
-2. Set `NEXTAUTH_URL` and `NEXT_PUBLIC_BASE_URL` to your production URL.
-3. In the Google Cloud console, add the authorized redirect URI
-   `https://<your-domain>/api/auth/callback/google`.
+```text
+https://<your-domain>/api/auth/callback/google
+```
 
+Vercel remains an alternative deployment target for a separate installation, but it
+is not the runtime used by the Glowryia instance.
 ### 6. Connect your Hermes (the bridge)
 
 On the machine where Hermes lives, set up the bridge so the bus connects:

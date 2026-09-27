@@ -100,7 +100,7 @@ model Draft {
   @@index([source])
   @@index([engagementTier])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model TweetMetric {
@@ -114,7 +114,7 @@ model TweetMetric {
 
   @@index([draftId])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model Idea {
@@ -130,7 +130,7 @@ model Idea {
   @@index([category])
   @@index([type])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model ContentCalendar {
@@ -138,7 +138,7 @@ model ContentCalendar {
   week String @unique
   data Json
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model YoutubeIdea {
@@ -158,7 +158,7 @@ model YoutubeIdea {
 
   @@index([status])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model YoutubeScript {
@@ -184,12 +184,12 @@ model YoutubeScript {
   seoChapters     Json?
   titleVariants   Json?
   thumbnailConcept String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([status])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model YoutubeFeedback {
@@ -199,7 +199,7 @@ model YoutubeFeedback {
   type   String?
   date   DateTime @default(now())
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model LongformScript {
@@ -236,7 +236,7 @@ model LongformScript {
 
   @@index([status])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model AgentState {
@@ -252,7 +252,7 @@ model AgentState {
   recentActivity Json?     @default("[]")
   updatedAt      DateTime  @updatedAt
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model AgentBusMessage {
@@ -268,7 +268,7 @@ model AgentBusMessage {
   @@index([toAgent, read])
   @@index([fromAgent])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model BattleRoyaleBot {
@@ -276,7 +276,7 @@ model BattleRoyaleBot {
   state     Json
   updatedAt DateTime @updatedAt
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model ContentRequest {
@@ -287,7 +287,7 @@ model ContentRequest {
   createdAt      DateTime  @default(now())
   completedAt    DateTime?
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 // ─── Generic Key-Value Store ────────────────────────────────────
@@ -363,7 +363,7 @@ model Article {
   @@index([track])
   @@index([scheduledDate])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model SavedTitle {
@@ -375,7 +375,7 @@ model SavedTitle {
 
   @@index([track])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 // ─── Client Pulse Telegram Bot ─────────────────────────────────
@@ -400,7 +400,7 @@ model ClientPulseClient {
   @@index([clientName])
   @@index([productManagerName])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model ClientPulseChat {
@@ -420,7 +420,7 @@ model ClientPulseChat {
   @@index([linkedClientId])
   @@index([status])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model ClientPulseMessage {
@@ -446,7 +446,7 @@ model ClientPulseMessage {
   @@index([chatId, sentAt])
   @@index([needsReply])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model ClientPulseAnalysis {
@@ -473,7 +473,7 @@ model ClientPulseAnalysis {
   @@index([category])
   @@index([overallScore])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 model ClientPulseAlert {
@@ -497,7 +497,7 @@ model ClientPulseAlert {
   @@index([sentAt])
   @@index([acknowledgedAt])
 
-  @@schema("public")
+  @@schema("agent_mission")
 }
 
 // ─── Hermes bus (Hermy HQ website ↔ Hermes on the Mac mini) ─────

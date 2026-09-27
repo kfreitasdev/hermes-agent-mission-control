@@ -23,7 +23,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { normalizeDatabaseUrl } from "./connection.mjs";
+import { normalizeDatabaseUrl, attachPoolErrorLogger } from "./connection.mjs";
 
 const execFileP = promisify(execFile);
 const HERMES = process.env.HERMES_BIN || "hermes";
@@ -62,6 +62,7 @@ const pool = new pg.Pool({
 });
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
+attachPoolErrorLogger(pool, (message) => log("postgres pool error:", message));
 const q = (text, params) => pool.query(text, params);
 
 async function hermes(args, { timeout = 30000 } = {}) {
