@@ -24,6 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { normalizeDatabaseUrl, attachPoolErrorLogger } from "./connection.mjs";
+import { buildAgentState } from "./agent-state.mjs";
 
 const execFileP = promisify(execFile);
 const HERMES = process.env.HERMES_BIN || "hermes";
@@ -64,6 +65,49 @@ const pool = new pg.Pool({
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 attachPoolErrorLogger(pool, (message) => log("postgres pool error:", message));
 const q = (text, params) => pool.query(text, params);
+
+async function syncAgentState(profile, details) {
+  try {
+    const current = await q(
+      `SELECT "tasksCompleted", "totalCost", "recentActivity"
+       FROM agent_mission."AgentState" WHERE id=$1`,
+      [profile],
+    );
+    const { existing: existingOverride, ...stateDetails } = details;
+    const state = buildAgentState({
+      profile,
+      existing: { ...(current.rows[0] || {}), ...(existingOverride || {}) },
+      ...stateDetails,
+    });
+    await q(
+      `INSERT INTO agent_mission."AgentState"
+         (id, name, emoji, role, status, "lastActive", "tasksCompleted", "totalCost",
+          "currentTask", "recentActivity", "updatedAt")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,now())
+       ON CONFLICT (id) DO UPDATE SET
+         name=EXCLUDED.name, emoji=EXCLUDED.emoji, role=EXCLUDED.role,
+         status=EXCLUDED.status, "lastActive"=EXCLUDED."lastActive",
+         "tasksCompleted"=EXCLUDED."tasksCompleted", "totalCost"=EXCLUDED."totalCost",
+         "currentTask"=EXCLUDED."currentTask", "recentActivity"=EXCLUDED."recentActivity",
+         "updatedAt"=now()`,
+      [
+        state.id,
+        state.name,
+        state.emoji,
+        state.role,
+        state.status,
+        state.lastActive,
+        state.tasksCompleted,
+        state.totalCost,
+        state.currentTask,
+        JSON.stringify(state.recentActivity),
+      ],
+    );
+  } catch (error) {
+    // Agent-state visibility must not be able to interrupt the actual run.
+    log("agent state sync failed:", error.message);
+  }
+}
 
 async function hermes(args, { timeout = 30000 } = {}) {
   const { stdout } = await execFileP(HERMES, args, { timeout, maxBuffer: 8 * 1024 * 1024 });
@@ -147,6 +191,63 @@ async function mirrorHealth() {
     gateway = /gateway[^\n]*(running|online)/i.test(out) ? "running" : "stopped";
   } catch (e) { detail = e.message.split("\n")[0]; }
   await setStore("hermes-health", { online, gateway, detail, lastSeen: new Date().toISOString() });
+}
+
+async function mirrorAgentStates() {
+  const profiles = [...PROFILE_IDS];
+  const { rows: requests } = await q(
+    `SELECT target_profile, status, title, started_at, finished_at, created_at,
+            COUNT(*) FILTER (WHERE status='done') OVER (PARTITION BY target_profile)::int AS done_count
+       FROM agent_mission.requests
+      WHERE target_profile = ANY($1::text[])
+      ORDER BY created_at DESC`,
+    [profiles],
+  );
+  const { rows: events } = await q(
+    `SELECT agent, title, detail, created_at
+       FROM agent_mission.events
+      WHERE kind='run' AND agent = ANY($1::text[])
+      ORDER BY created_at DESC
+      LIMIT 160`,
+    [profiles],
+  );
+
+  const latestByProfile = new Map();
+  for (const row of requests) {
+    if (!latestByProfile.has(row.target_profile)) latestByProfile.set(row.target_profile, row);
+  }
+  const activityByProfile = new Map();
+  for (const event of events) {
+    const activity = activityByProfile.get(event.agent) || [];
+    if (activity.length < 20) {
+      activity.push({
+        timestamp: event.created_at,
+        action: event.title,
+        ...(event.detail ? { result: event.detail } : {}),
+      });
+      activityByProfile.set(event.agent, activity);
+    }
+  }
+
+  for (const [profile, latest] of latestByProfile) {
+    const status = latest.status === "running"
+      ? "working"
+      : latest.status === "failed"
+        ? "error"
+        : "idle";
+    const lastActive = latest.status === "running"
+      ? latest.started_at || latest.created_at
+      : latest.finished_at || latest.created_at;
+    await syncAgentState(profile, {
+      status,
+      currentTask: status === "working" ? String(latest.title).slice(0, 300) : null,
+      lastActive,
+      existing: {
+        tasksCompleted: Number(latest.done_count || 0),
+        recentActivity: activityByProfile.get(profile) || [],
+      },
+    });
+  }
 }
 
 /* ─────────────── Memory Wiki (warm tier: git-tracked markdown) ─────────────── */
@@ -266,6 +367,11 @@ function profilePrompt(r) {
 
 async function runRequest(r) {
   const profile = String(r.target_profile || "glowryia");
+  await syncAgentState(profile, {
+    status: "working",
+    currentTask: String(r.title || r.prompt || "").slice(0, 300),
+    action: `Iniciou: ${String(r.title || r.prompt || "").slice(0, 300)}`,
+  });
   await emit("run", `Started: ${r.title}`, {
     level: "info",
     agent: profile,
@@ -307,6 +413,12 @@ async function runRequest(r) {
     }
     await q(`UPDATE agent_mission.requests SET status='done', result=$2, finished_at=now(), updated_at=now() WHERE id=$1`,
       [r.id, result.slice(0, 8000)]);
+    await syncAgentState(profile, {
+      status: "idle",
+      currentTask: null,
+      action: `Concluído: ${String(r.title || r.prompt || "").slice(0, 300)}`,
+      completed: true,
+    });
     await emit("run", `Done: ${r.title}`, {
       level: "up",
       agent: profile,
@@ -317,6 +429,11 @@ async function runRequest(r) {
   } catch (e) {
     const msg = (e.stderr || e.message || "error").toString().split("\n")[0].slice(0, 600);
     await q(`UPDATE agent_mission.requests SET status='failed', error=$2, finished_at=now(), updated_at=now() WHERE id=$1`, [r.id, msg]);
+    await syncAgentState(profile, {
+      status: "error",
+      currentTask: null,
+      action: `Falhou: ${String(r.title || r.prompt || "").slice(0, 300)} — ${msg}`,
+    });
     await emit("run", `Failed: ${r.title}`, {
       level: "down",
       agent: profile,
@@ -368,6 +485,7 @@ async function mirrorTick() {
   try { await mirrorKanban(); } catch (e) { log("mirrorKanban err", e.message); }
   try { await mirrorCrons(); } catch (e) { log("mirrorCrons err", e.message); }
   try { await mirrorHealth(); } catch (e) { log("mirrorHealth err", e.message); }
+  try { await mirrorAgentStates(); } catch (e) { log("mirrorAgentStates err", e.message); }
   try { await mirrorWiki(); } catch (e) { log("mirrorWiki err", e.message); }
   try { await mirrorCost(); } catch (e) { log("mirrorCost err", e.message); }
   try { await maybeDailyBrief(); } catch (e) { log("maybeDailyBrief err", e.message); }

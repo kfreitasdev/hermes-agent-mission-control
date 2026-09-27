@@ -115,6 +115,9 @@ export default function TasksPage() {
           <div>
             <div className="eyebrow mb-2">Tarefas operacionais</div>
             <h1 className="text-[32px] font-semibold tracking-[-0.025em] leading-none text-[var(--text)]">Tarefas</h1>
+            <p className="text-[13px] text-[var(--text-3)] mt-3 max-w-xl">
+              Quadro de planejamento. A aprovação registra a autorização; a execução e o agente responsável aparecem em Hermes.
+            </p>
           </div>
           <Button variant="primary" onClick={() => setShowAddTask(true)}>+ Adicionar tarefa</Button>
         </div>

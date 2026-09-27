@@ -6,7 +6,9 @@
 
 ## Atualização pós-auditoria
 
-Em 2026-09-27, a migration `0026_agent_mission_content_projection.sql` foi aplicada no Supabase e as telas legadas foram remapeadas do schema `public` para `agent_mission`. O build, os serviços, os endpoints internos e os ciclos de escrita/leitura das telas Ideas, Articles, Saved Titles, Longform, YouTube Scripts, X Content e Client Pulse passaram a ser verificáveis. O Bridge também recebeu tratamento para erros do pool PostgreSQL e foi reiniciado sem novos erros; `NRestarts=0` no estado atual.
+Em 2026-09-27, a migration `0026_agent_mission_content_projection.sql` foi aplicada no Supabase e as telas legadas foram remapeadas do schema `public` para `agent_mission`. O build, os serviços, os endpoints internos e os ciclos de escrita/leitura das telas Ideas, Articles, Saved Titles, Longform, YouTube Scripts, X Content e Client Pulse passaram a ser verificáveis. O Bridge também recebeu tratamento para erros do pool PostgreSQL e foi reiniciado sem novos erros.
+
+A auditoria funcional complementar está em [`docs/RUNTIME-AUDIT-2026-09-27.md`](./RUNTIME-AUDIT-2026-09-27.md). Ela encontrou e corrigiu a desconexão entre o Bridge e `AgentState`: a solicitação era concluída em Hermes, mas a tela Agents permanecia no roster padrão. O Bridge agora projeta `working`, `idle`, `error`, `currentTask`, atividades e contagem concluída, inclusive por reconciliação após restart.
 
 O restante deste documento preserva o diagnóstico original para rastreabilidade. Itens que já foram fechados estão marcados na matriz e na seção de fechamento.
 
@@ -59,8 +61,8 @@ Não há bloqueador P0 para o runtime atual.
    - O ciclo de escrita/leitura foi exercitado para Ideas, Articles, Saved Titles, Longform, YouTube Scripts e X Content.
 
 2. **Agents**
-   - `AgentState` agora está em `agent_mission` e o endpoint retorna os oito Profiles sem `P2021`.
-   - O ciclo de leitura e atualização do estado foi exercitado diretamente no projection store; não foi executada tarefa real de Profile.
+   - `AgentState` está em `agent_mission` e o endpoint retorna os oito Profiles sem `P2021`.
+   - O Bridge agora atualiza e reconcilia o estado real de cada Profile a partir de requests/eventos; a execução real de `glowryia` foi lida de volta como `idle`, com `tasksCompleted=3` e atividades registradas.
 
 3. **Auditoria end-to-end das telas**
    - O smoke autenticado por `x-internal-secret` cobriu criação, leitura posterior, atualização e limpeza nos módulos mutáveis.
@@ -80,9 +82,9 @@ Não há bloqueador P0 para o runtime atual.
 3. **Documentação de deploy**
    - **Fechado:** README e ONBOARDING agora documentam o deploy self-hosted via systemd + proxy HTTPS e mantêm Vercel como alternativa.
 
-4. **Código local não está sincronizado com `origin/main`**
-   - O checkout local possui commits locais à frente do `origin/main`.
-   - As correções estão no servidor e no checkout local, mas ainda não foram publicadas no repositório remoto original. Fazer push somente após revisão explícita do usuário.
+4. **Código publicado no fork do time**
+   - O checkout usa `origin=https://github.com/kfreitasdev/hermes-agent-mission-control` e `upstream=https://github.com/sharbelxyz/hermes-agent-mission-control`.
+   - A base auditada foi publicada no fork do time; alterações desta auditoria serão publicadas após os gates finais.
 
 5. **Lint histórico do projeto**
    - `npm run lint` ainda falha com 123 erros e 46 warnings espalhados pelo código legado.
@@ -97,8 +99,9 @@ Não há bloqueador P0 para o runtime atual.
 - **Fechado:** Client Pulse `map-chat` com autorização administrativa e leitura posterior.
 - **Fechado:** Agents, Home, Score e Client Pulse retornando payloads válidos pelo endpoint interno.
 - **Fechado:** pool do Bridge protegido contra evento de erro não tratado; serviço reiniciado com `NRestarts=0`.
+- **Fechado:** Bridge ↔ AgentState conectado; Profile em execução, tarefa atual, erro, atividade e contagem são projetados no Supabase e reconciliados após restart.
 - **Fechado:** README e ONBOARDING atualizados para o deploy self-hosted real, mantendo Vercel como alternativa.
-- **Pendente por decisão de publicação:** push dos commits locais para o repositório remoto original; não foi feito porque o remote aponta para `sharbelxyz/hermes-agent-mission-control`.
+- **Fechado:** base anterior publicada no fork privado do time `kfreitasdev/hermes-agent-mission-control`.
 - **Pendente por autorização de conteúdo:** uma gravação real e permanente no Memory/Wiki. O diretório foi inicializado como repositório Git, mas não foi criada memória artificial apenas para teste.
 
-A instalação e os módulos de persistência auditados estão prontos para revisão final. O produto só deve ser chamado de concluído após a decisão sobre publicar os commits no remote e, se desejado, a primeira gravação real de memória operacional.
+A instalação e os módulos de persistência auditados estão prontos para revisão final. O quadro `/tasks` continua sendo planejamento independente; a execução real e o estado dos Profiles são acompanhados em Hermes e na tela Agents.

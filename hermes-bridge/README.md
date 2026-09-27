@@ -9,7 +9,7 @@ website  ◀──read projections────  schema         ◀──mirror�
 ```
 
 ## What it does
-- **Pull (Hermes → website):** mirrors the kanban board into `HermesTask`, cron list + health into `DataStore`, and writes activity to `AgentEvent`.
+- **Pull (Hermes → website):** mirrors the kanban board into `HermesTask`, cron list + health into `DataStore`, projects Profile execution into `AgentState` (`working`/`idle`/`error`, current task, activity and completed count), and writes activity to `AgentEvent`.
 - **Push (website → Hermes):** runs `AgentRequest` rows that are `queued` (safe) or `approved` (you approved a side-effecting one) via the selected persistent Hermes Profile, then writes results back. It never runs `awaiting_approval` rows.
 - Each request carries `target_profile` and a structured `handoff` JSON object. The bridge validates the Profile against the local fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`) before invoking `hermes -p <profile> -z ...`.
 
