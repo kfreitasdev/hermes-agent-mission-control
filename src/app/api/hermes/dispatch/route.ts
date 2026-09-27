@@ -58,12 +58,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "briefing requests accept only the read-only context_engine toolset" }, { status: 400 });
   }
   const promptText = String(b.prompt ?? b.title ?? "");
-  if (requestedProfile !== "glowryia" && /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(promptText)) {
+  const metadataInput = b.metadata && typeof b.metadata === "object" && !Array.isArray(b.metadata) ? b.metadata : {};
+  const safeNotebookRequested = Array.isArray(requestedToolsets) && requestedToolsets.includes("notebooklm-safe");
+  const inferredNotebookOperation = typeof metadataInput.notebookOperation === "string" && ["create_notebook", "add_source", "list_notebooks", "list_sources"].includes(metadataInput.notebookOperation)
+    ? metadataInput.notebookOperation
+    : /\bnlm_create_notebook\b|\bcreate(?: a| an)? notebook(?:lm)?\b|\bcriar(?: um)? notebook(?:lm)?\b/i.test(promptText) ? "create_notebook"
+    : /\bnlm_add_source\b|\badd(?: a| an)? source\b|\badicionar fonte\b/i.test(promptText) ? "add_source"
+    : /\bnlm_list_sources\b|\blist(?: the)? sources\b|\blistar fontes\b/i.test(promptText) ? "list_sources"
+    : /\bnlm_list_notebooks\b|\blist(?: the)? notebooks\b|\blistar notebooks\b/i.test(promptText) ? "list_notebooks" : null;
+  if (requestedProfile !== "glowryia" && (safeNotebookRequested || /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(promptText))) {
     return NextResponse.json({ error: "NotebookLM requests must target glowryia" }, { status: 400 });
   }
-  const metadata = b.metadata && typeof b.metadata === "object" && !Array.isArray(b.metadata)
-    ? { ...b.metadata, ...(requestedToolsets ? { allowedToolsets: requestedToolsets } : {}) }
-    : requestedToolsets ? { allowedToolsets: requestedToolsets } : {};
+  if ((safeNotebookRequested || /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(promptText)) && !inferredNotebookOperation) {
+    return NextResponse.json({ error: "NotebookLM requests must declare one safe operation" }, { status: 400 });
+  }
+  const metadata = {
+    ...metadataInput,
+    ...(requestedToolsets ? { allowedToolsets: requestedToolsets } : {}),
+    ...(inferredNotebookOperation ? { notebookOperation: inferredNotebookOperation } : {}),
+  };
   const actor = await requestActor();
   const suppliedIdempotencyKey = b.idempotencyKey ?? req.headers.get("Idempotency-Key");
   if (!isValidIdempotencyKey(suppliedIdempotencyKey)) {

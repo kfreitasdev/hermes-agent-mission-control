@@ -539,8 +539,13 @@ function profilePrompt(r) {
   const authorization = r.status === "approved"
     ? "Esta solicitação foi aprovada explicitamente. Execute a operação solicitada usando as ferramentas disponíveis, limitada ao escopo da tarefa."
     : "Esta solicitação não está autorizada para efeitos externos; produza somente uma análise.";
+  const notebookOperationName = notebookRequest ? notebookOperation(r) : null;
   const notebookInstruction = notebookRequest
-    ? "Se esta solicitação envolver NotebookLM, só informe sucesso após executar as ferramentas necessárias. Retorne SOMENTE JSON com status=completed, notebook_id e, quando houver uma URL/fonte, source_id; se não concluir, retorne status=not_completed e reason."
+    ? notebookOperationName === "list_notebooks"
+      ? "Para list_notebooks, execute a ferramenta e retorne SOMENTE JSON com status=completed e notebooks (array)."
+      : notebookOperationName === "list_sources"
+        ? "Para list_sources, execute a ferramenta e retorne SOMENTE JSON com status=completed, notebook_id e sources (array)."
+        : "Se esta solicitação envolver NotebookLM, só informe sucesso após executar as ferramentas necessárias. Retorne SOMENTE JSON com status=completed, notebook_id e, para add_source, source_id; se não concluir, retorne status=not_completed e reason."
     : null;
   return [
     `Você está executando como o Profile Hermes ${profile}.`,
@@ -624,23 +629,40 @@ function cronEditArgs(a) {
   return argv;
 }
 
+function notebookOperation(request) {
+  const metadata = request.metadata && typeof request.metadata === "object" && !Array.isArray(request.metadata) ? request.metadata : {};
+  const explicit = typeof metadata.notebookOperation === "string" ? metadata.notebookOperation : "";
+  if (["create_notebook", "add_source", "list_notebooks", "list_sources"].includes(explicit)) return explicit;
+  const taskText = String(request.prompt || request.title || "");
+  if (/\bnlm_create_notebook\b|\bcreate(?: a| an)? notebook(?:lm)?\b|\bcriar(?: um)? notebook(?:lm)?\b/i.test(taskText)) return "create_notebook";
+  if (/\bnlm_add_source\b|\badd(?: a| an)? source\b|\badicionar fonte\b/i.test(taskText)) return "add_source";
+  if (/\bnlm_list_sources\b|\blist(?: the)? sources\b|\blistar fontes\b/i.test(taskText)) return "list_sources";
+  if (/\bnlm_list_notebooks\b|\blist(?: the)? notebooks\b|\blistar notebooks\b/i.test(taskText)) return "list_notebooks";
+  return null;
+}
+
 function requestToolsets(r) {
   const profile = String(r.target_profile || "glowryia");
   const taskText = String(r.prompt || r.title || "");
   const notebookRequest = /\bnotebooklm\b|\bnlm_(?:create_notebook|add_source)\b/i.test(taskText);
-  if (notebookRequest && profile !== "glowryia") throw new Error("NotebookLM requests must target the Glowryia orchestrator");
-  if (notebookRequest) return ["notebooklm-safe"];
+  if (notebookRequest) {
+    if (profile !== "glowryia") throw new Error("NotebookLM requests must target the Glowryia orchestrator");
+    if (!notebookOperation(r)) throw new Error("NotebookLM requests must declare one safe operation");
+    return ["notebooklm-safe"];
+  }
   const metadata = r.metadata && typeof r.metadata === "object" && !Array.isArray(r.metadata) ? r.metadata : {};
   const requested = Array.isArray(metadata.allowedToolsets) ? metadata.allowedToolsets : [];
   const allowed = new Set(["context_engine", "web", "browser", "terminal", "file", "code_execution", "skills", "memory", "kanban", "cronjob", "notebooklm-safe"]);
   if (requested.some((item) => typeof item !== "string" || !allowed.has(item))) {
     throw new Error("request contains an unsupported toolset capability");
   }
+  if (requested.some((item) => item === "notebooklm-safe")) {
+    if (profile !== "glowryia") throw new Error("NotebookLM toolset must target the Glowryia Profile");
+    if (!notebookOperation(r)) throw new Error("NotebookLM requests must declare one safe operation");
+    return ["notebooklm-safe"];
+  }
   if (profile !== "glowryia" && requested.some((item) => ORCHESTRATION_TOOLSETS.has(item))) {
     throw new Error("orchestration toolsets must target the Glowryia Profile");
-  }
-  if (profile !== "glowryia" && requested.includes("notebooklm-safe")) {
-    throw new Error("NotebookLM toolset must target the Glowryia Profile");
   }
   return requested.length ? [...new Set(requested)] : ["context_engine"];
 }
@@ -720,15 +742,20 @@ async function validateExternalResult(request, result, beforeSnapshot = null) {
     throw new Error("NotebookLM read-back source URL did not match the requested result");
   }
   if (beforeSnapshot) {
-    const createRequest = /\b(?:create_notebook|create notebook|criar(?: um)? notebook)\b/i.test(taskText);
-    const addSourceRequest = /\bnlm_add_source\b|\b(?:add source|adicionar fonte)\b/i.test(taskText);
+    const operation = notebookOperation(request);
+    const createRequest = operation === "create_notebook";
+    const addSourceRequest = operation === "add_source";
+    const observationalRequest = operation === "list_notebooks" || operation === "list_sources";
     if (createRequest && beforeSnapshot.notebooks.includes(String(notebookId))) {
       throw new Error("NotebookLM returned a pre-existing notebook for a create operation");
     }
     const previousSources = Array.isArray(beforeSnapshot.sources[String(notebookId)])
       ? beforeSnapshot.sources[String(notebookId)] : [];
-    if (addSourceRequest && sourceId && previousSources.includes(String(sourceId))) {
-      throw new Error("NotebookLM returned a pre-existing source for an add operation");
+    if (!observationalRequest && sourceId && previousSources.includes(String(sourceId))) {
+      throw new Error("NotebookLM returned a pre-existing source for a mutating operation");
+    }
+    if (addSourceRequest && !sourceId) {
+      throw new Error("NotebookLM add_source did not return source_id");
     }
   }
   return JSON.stringify({ status: "completed", notebook_id: String(notebookId), ...(sourceId ? { source_id: String(sourceId) } : {}) });
