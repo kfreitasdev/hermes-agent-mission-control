@@ -14,7 +14,7 @@ O restante deste documento preserva o diagnóstico original para rastreabilidade
 
 A instalação operacional está concluída e o circuito website ↔ Supabase ↔ Hermes Bridge está ativo. O domínio responde, o OAuth Google está configurado, os dois serviços estão habilitados no systemd e existe evento recente `Bridge connected` no schema `agent_mission`.
 
-O que ainda impede declarar o produto completo não é a instalação base: são gaps funcionais de telas que ainda apontam para modelos legados em `public` ausentes no banco atual, além de documentação ainda orientada a Vercel enquanto o ambiente instalado usa systemd + proxy HTTPS.
+Os gaps funcionais encontrados foram fechados nesta rodada com uma migration versionada e remapeamento do Prisma para `agent_mission`. Restam apenas a decisão de publicação dos commits no remote original e, se desejado, uma gravação real autorizada no Memory/Wiki.
 
 ## Checklist baseado no onboarding original
 
@@ -51,44 +51,34 @@ O que ainda impede declarar o produto completo não é a instalação base: são
 
 Não há bloqueador P0 para o runtime atual.
 
-### P1 — corrigir antes de declarar o produto completo
+### P1 — fechado nesta rodada (diagnóstico histórico)
 
 1. **Persistência legada em telas de conteúdo**
-   - `public.Idea` não existe.
-   - `public.Article` não existe.
-   - `public.SavedTitle` não existe.
-   - `public.LongformScript` não existe.
-   - `public.YoutubeScript` não existe.
-   - `public.ClientPulseAnalysis` não existe.
-   - `public.Draft` não existe para X Content.
+   - Os modelos que não existiam em `public` foram criados como projeções cockpit-owned em `agent_mission` pela migration `0026_agent_mission_content_projection.sql`.
+   - O Prisma foi remapeado para o schema `agent_mission` sem duplicar os domínios canônicos de `public`.
+   - O ciclo de escrita/leitura foi exercitado para Ideas, Articles, Saved Titles, Longform, YouTube Scripts e X Content.
 
-   Essas telas podem abrir, mas operações de gravação não estão apoiadas por tabelas presentes no banco vigente. O próximo trabalho deve escolher, por módulo, entre migrar para `agent_mission`/`data_store` ou criar migrations SQL versionadas no schema canônico apropriado. Não usar `prisma db push`.
-
-2. **Agents ainda consulta `public.AgentState`**
-   - A API registra `P2021` porque a tabela não existe.
-   - O roster visual padrão funciona, mas estados persistidos dos agentes não estão confirmados.
-   - Deve ser adaptado ao roster/projeção do Agent Mission ou receber uma tabela versionada aprovada.
+2. **Agents**
+   - `AgentState` agora está em `agent_mission` e o endpoint retorna os oito Profiles sem `P2021`.
+   - O ciclo de leitura e atualização do estado foi exercitado diretamente no projection store; não foi executada tarefa real de Profile.
 
 3. **Auditoria end-to-end das telas**
-   - Ainda falta testar com sessão autenticada, por módulo, o ciclo: criar → recarregar → ler novamente → atualizar/excluir quando aplicável.
-   - Prioridade: Ideas, Articles, Longform, YouTube Scripts, X Content, Client Pulse, Tasks e Memory/Wiki.
-   - Não executar requests reais de Profiles apenas para teste; usar fixtures ou operações explicitamente autorizadas.
+   - O smoke autenticado por `x-internal-secret` cobriu criação, leitura posterior, atualização e limpeza nos módulos mutáveis.
+   - Client Pulse foi exercitado com `map-chat` usando o segredo administrativo e leitura posterior.
+   - A inspeção visual autenticada no navegador permanece opcional; a CLI de Browser Use não está instalada neste host.
 
-### P2 — operação e documentação
+### P2 — observação e decisões restantes
 
 1. **Bridge teve 3 reinícios anteriores**
-   - O serviço está saudável agora e o último processo está ativo.
-   - O journal registra falhas transitórias de conexão do pool PostgreSQL (`db_connection_closed_in_auth`, `ECONNRESET`) antes do último restart.
-   - Vale adicionar tratamento de erro/reconexão do pool e um health check operacional para evitar que uma conexão ociosa derrube o processo.
+   - O tratamento para evento de erro do pool foi adicionado e o serviço foi reiniciado.
+   - Estado atual: `active`, `ExecMainStatus=0`, `NRestarts=0` desde o novo rollout.
 
 2. **Memory/Wiki sem conteúdo sincronizado**
-   - `agent_mission.memory_entries` está vazio e `/root/.hermes/wiki` ainda não possui `.git`.
-   - A capacidade está implementada no bridge, mas falta uma gravação autorizada de `memory.write` para validar o caminho completo. Não criar uma gravação artificial sem autorização.
+   - `/root/.hermes/wiki` foi inicializado como repositório Git e permanece sem conteúdo artificial.
+   - A gravação real de `memory.write` continua aguardando conteúdo autorizado; não é um bloqueador técnico da instalação.
 
-3. **Documentação de deploy diverge do ambiente**
-   - O onboarding original descreve Vercel.
-   - O ambiente real usa `hermy-hq.service` + proxy HTTPS + `hermes.glowryia.com`.
-   - Este relatório registra a divergência; o onboarding deve ganhar uma seção de deployment self-hosted ou marcar Vercel como alternativa.
+3. **Documentação de deploy**
+   - **Fechado:** README e ONBOARDING agora documentam o deploy self-hosted via systemd + proxy HTTPS e mantêm Vercel como alternativa.
 
 4. **Código local não está sincronizado com `origin/main`**
    - O checkout local possui commits locais à frente do `origin/main`.
