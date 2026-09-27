@@ -84,6 +84,11 @@ Não há bloqueador P0 para o runtime atual.
    - O checkout local possui commits locais à frente do `origin/main`.
    - As correções estão no servidor e no checkout local, mas ainda não foram publicadas no repositório remoto original. Fazer push somente após revisão explícita do usuário.
 
+5. **Lint histórico do projeto**
+   - `npm run lint` ainda falha com 123 erros e 46 warnings espalhados pelo código legado.
+   - `npm run build`, `npx prisma validate`, `git diff --check` e os testes focados desta rodada passam.
+   - A limpeza integral do lint não foi misturada à correção de persistência para evitar alteração ampla não relacionada.
+
 ## Fechamento pós-ajustes
 
 - **Fechado:** migration versionada `0026_agent_mission_content_projection.sql` aplicada e lida de volta no Supabase.
