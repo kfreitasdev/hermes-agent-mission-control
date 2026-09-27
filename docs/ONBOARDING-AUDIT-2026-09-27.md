@@ -91,7 +91,7 @@ Não há bloqueador P0 para o runtime atual.
    - Este relatório registra a divergência; o onboarding deve ganhar uma seção de deployment self-hosted ou marcar Vercel como alternativa.
 
 4. **Código local não está sincronizado com `origin/main`**
-   - O checkout local está 16 commits à frente do `origin/main`.
+   - O checkout local possui commits locais à frente do `origin/main`.
    - As correções estão no servidor e no checkout local, mas ainda não foram publicadas no repositório remoto original. Fazer push somente após revisão explícita do usuário.
 
 ## Fechamento pós-ajustes
