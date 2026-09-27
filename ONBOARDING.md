@@ -142,3 +142,8 @@ kanban, cron, health, and memory back.
 
 Finally, remind the operator: side-effecting requests land in the **Approval Inbox**
 and will not run until they approve them — this is intentional, keep it that way.
+
+For Memory/Wiki, explain the source-of-truth boundary: the bridge writes the
+versioned Markdown entry under `HERMES_WIKI` and then mirrors it into
+`agent_mission.memory_entries` for dashboard search and operational reads. The
+Supabase row is a projection, not a replacement for the versioned Wiki history.

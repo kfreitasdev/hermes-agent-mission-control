@@ -224,6 +224,24 @@ website's activity feed. To keep it running, install it via launchd (macOS) or
 systemd (Linux) — full instructions in
 [`hermes-bridge/README.md`](./hermes-bridge/README.md).
 
+### 7. Memory/Wiki: fonte e projeção
+
+A memória Wiki não fica somente no banco. O arquivo Markdown versionado em
+`HERMES_WIKI` é a fonte de verdade quente no host Hermes. O bridge espelha esses
+arquivos para `agent_mission.memory_entries`, e o dashboard consulta essa projeção
+no Supabase. Uma gravação feita em `/memory-wiki` segue este fluxo:
+
+```text
+Dashboard → agent_mission.requests (memory.write)
+         → bridge → arquivo Markdown + commit Git
+         → agent_mission.memory_entries → dashboard
+```
+
+Assim, o Supabase fica com a projeção operacional pesquisável e o Wiki mantém
+proveniência, histórico e recuperação fora do banco. O bridge precisa estar ativo
+para concluir a sincronização; uma request enfileirada sozinha não confirma que o
+arquivo foi gravado.
+
 ---
 
 ## Project layout
