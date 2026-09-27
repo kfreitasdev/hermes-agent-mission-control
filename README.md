@@ -119,6 +119,15 @@ Nothing on your machine is exposed to the internet — the bridge only needs out
 access to Postgres and your local `hermes` CLI. See
 [`hermes-bridge/README.md`](./hermes-bridge/README.md) for details.
 
+## Registro da manutenção
+
+- [Resumo da auditoria e estado operacional](./docs/AUDIT-SUMMARY-2026-09-27.md)
+- [Skills utilizadas](./docs/SKILLS-USED.md)
+- [Skill versionada de auditoria](./skills/agent-mission-audit/SKILL.md)
+
+Esses arquivos registram decisões, limites e procedimentos reproduzíveis sem incluir
+segredos, cookies, tokens ou connection strings.
+
 ---
 
 ## Tech stack
