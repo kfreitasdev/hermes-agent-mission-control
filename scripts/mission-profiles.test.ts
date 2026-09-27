@@ -7,6 +7,8 @@ import {
 
 assert.equal(isMissionProfile("iris"), true);
 assert.equal(isMissionProfile("unknown"), false);
+assert.equal(isMissionProfile("toString"), false);
+assert.equal(isMissionProfile("constructor"), false);
 assert.deepEqual(normalizeHandoff({ objective: "  mapear processo  ", evidence: ["ata"] }), {
   objective: "mapear processo",
   evidence: ["ata"],

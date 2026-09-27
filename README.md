@@ -105,7 +105,7 @@ process runs on the machine where Hermes lives.
         └────────────────────────────────────────────────────────┘
 ```
 
-- **Website → agent:** the site inserts an `AgentRequest` with `target_profile` and a structured `handoff`. Safe requests are `queued`; anything side-effecting is `awaiting_approval` until you approve it in the inbox.
+- **Website → agent:** the site inserts an `AgentRequest` with `target_profile` and a structured `handoff`. Requests wait in `awaiting_approval` until you approve them in the inbox; queued rows are never executable by the bridge.
 - **Bridge → agent:** the bridge validates the target against the persistent Hermes fleet (`glowryia`, `max`, `nova`, `atlas`, `lia`, `iris`, `lex`, `pulse`), invokes `hermes -p <profile>`, and writes results back. It never runs `awaiting_approval`.
 - **Agent → website:** the bridge mirrors the kanban board (`HermesTask`), cron +
   health (`DataStore`), memory (`HermesMemory`), and activity (`AgentEvent`) back
@@ -241,6 +241,28 @@ Assim, o Supabase fica com a projeção operacional pesquisável e o Wiki manté
 proveniência, histórico e recuperação fora do banco. O bridge precisa estar ativo
 para concluir a sincronização; uma request enfileirada sozinha não confirma que o
 arquivo foi gravado.
+
+### 8. NotebookLM por Profile
+
+O MCP do NotebookLM é configurado por Profile do Hermes. A configuração global não
+é automaticamente herdada pelo Profile `glowryia`, que é o Profile usado pelo bridge.
+No host Hermes, valide e configure assim:
+
+```sh
+hermes -p glowryia mcp add notebooklm \
+  --command /root/.local/bin/notebooklm-mcp \
+  --connect-timeout 60
+
+hermes -p glowryia mcp test notebooklm
+notebooklm-auth verify
+npm run audit:notebooklm
+```
+
+O teste deve mostrar conexão e 13 ferramentas descobertas. O comando de auditoria é
+somente leitura: não cria notebooks, não adiciona fontes e não usa o navegador.
+Solicitações para criar notebooks devem chamar as ferramentas MCP `nlm_create_notebook`
+e `nlm_add_source`; a resposta só deve ser considerada concluída quando os IDs do
+notebook e da fonte forem retornados.
 
 ---
 

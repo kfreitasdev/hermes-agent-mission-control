@@ -1,5 +1,6 @@
 const https = require('https');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 // ── Config ──────────────────────────────────────────────────────────────────────
@@ -43,6 +44,15 @@ function getApiKey() { return API_KEYS[currentKeyIndex]; }
 function rotateKey() {
   currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
   console.log(`  ⚡ Rotated to API key ${currentKeyIndex + 1}`);
+}
+
+function normalizeDatabaseUrl(rawUrl) {
+  const parsed = new URL(rawUrl);
+  for (const parameter of [
+    'sslmode', 'ssl', 'uselibpqcompat', 'sslcert', 'sslkey', 'sslrootcert', 'sslpassword',
+    'ssl_min_protocol_version', 'ssl_max_protocol_version', 'sslnegotiation',
+  ]) parsed.searchParams.delete(parameter);
+  return parsed.toString();
 }
 
 // ── HTTP helper ─────────────────────────────────────────────────────────────────
@@ -302,7 +312,11 @@ async function main() {
       }
       if (dbUrl) break;
     }
-    const client = new Client({ connectionString: dbUrl, ssl: { rejectUnauthorized: false } });
+    const caPath = process.env.DATABASE_SSL_CA || process.env.PGSSLROOTCERT
+      || path.join(os.homedir(), '.hermes', 'certs', 'supabase-root-2021-ca.pem');
+    const ssl = { rejectUnauthorized: true };
+    if (fs.existsSync(caPath)) ssl.ca = fs.readFileSync(caPath, 'utf-8');
+    const client = new Client({ connectionString: normalizeDatabaseUrl(dbUrl), ssl });
     await client.connect();
     const dataJson = JSON.stringify(output);
     await client.query(

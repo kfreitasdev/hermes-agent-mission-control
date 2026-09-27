@@ -33,7 +33,7 @@ const HANDOFF_KEYS = new Set([
 ]);
 
 export function isMissionProfile(value: unknown): value is MissionProfile {
-  return typeof value === "string" && value in MISSION_PROFILES;
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(MISSION_PROFILES, value);
 }
 
 function cleanValue(value: unknown): unknown {

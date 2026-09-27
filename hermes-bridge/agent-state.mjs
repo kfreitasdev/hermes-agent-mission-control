@@ -22,8 +22,11 @@ export function buildAgentState({
   existing = null,
   now = new Date(),
   lastActive = null,
+  tasksCompleted = null,
 }) {
-  const meta = AGENT_PROFILE_META[profile];
+  const meta = typeof profile === "string" && Object.prototype.hasOwnProperty.call(AGENT_PROFILE_META, profile)
+    ? AGENT_PROFILE_META[profile]
+    : null;
   if (!meta) throw new Error(`unknown Hermes Profile: ${profile}`);
 
   const recentActivity = normalizeActivity(existing?.recentActivity);
@@ -37,8 +40,10 @@ export function buildAgentState({
     emoji: meta.emoji,
     role: meta.role,
     status,
-    lastActive: (lastActive ? new Date(lastActive) : now).toISOString(),
-    tasksCompleted: Number(existing?.tasksCompleted || 0) + (completed ? 1 : 0),
+    lastActive: (lastActive || existing?.lastActive ? new Date(lastActive || existing.lastActive) : now).toISOString(),
+    tasksCompleted: tasksCompleted == null
+      ? Number(existing?.tasksCompleted || 0) + (completed ? 1 : 0)
+      : Number(tasksCompleted),
     totalCost: Number(existing?.totalCost || 0),
     currentTask,
     recentActivity: recentActivity.slice(0, 20),

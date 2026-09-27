@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { idempotencyFields, isPrismaUniqueViolation, isValidIdempotencyKey, requestActor } from "@/lib/agent-request-errors";
 
 // GET ?q=&type=&status= → list/search wiki entries (mirrored by the bridge)
 export async function GET(req: Request) {
@@ -23,17 +24,33 @@ export async function GET(req: Request) {
   return NextResponse.json({ entries, typeCounts, total: all.length, lastSync });
 }
 
+function normalizeWikiPath(value: unknown): string | null {
+  const candidate = String(value ?? "").trim().replaceAll("\\", "/");
+  if (!candidate || candidate.includes("\0") || candidate.startsWith("/")
+      || candidate.split("/").includes("..") || !candidate.toLowerCase().endsWith(".md")) {
+    return null;
+  }
+  const normalized = candidate.replace(/\/+/g, "/");
+  if (normalized === "." || normalized.startsWith("../") || normalized.includes("/../")) return null;
+  return normalized;
+}
+
 // POST { path?, id?, type, title, body, tags?, links?, status?, confidence? }
 // → queue a wiki write for the bridge (writes the .md file + git commit on the mini).
 export async function POST(req: Request) {
   const b = await req.json().catch(() => ({}));
   const title = (b.title || "").toString().trim();
   if (!title) return NextResponse.json({ error: "title required" }, { status: 400 });
-  const slug = (b.id || b.path || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")).toString();
+  const rawType = (b.type || "note").toString().trim().toLowerCase();
+  const type = rawType.replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "note";
+  const rawSlug = (b.id || title).toString().trim().toLowerCase();
+  const slug = rawSlug.replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "entry";
+  const entryPath = normalizeWikiPath(b.path || `${type}s/${slug}.md`);
+  if (!entryPath) return NextResponse.json({ error: "path must be a relative .md path inside the wiki" }, { status: 400 });
   const entry = {
     id: slug,
-    path: (b.path || `${b.type || "note"}s/${slug}.md`).toString(),
-    type: (b.type || "note").toString(),
+    path: entryPath,
+    type,
     title,
     status: (b.status || "active").toString(),
     confidence: b.confidence ?? null,
@@ -42,15 +59,53 @@ export async function POST(req: Request) {
     links: Array.isArray(b.links) ? b.links : [],
     body: (b.body || "").toString(),
   };
-  const row = await prisma.agentRequest.create({
-    data: {
-      origin: "web",
-      kind: "memory.write",
-      title: `Memory: ${title}`.slice(0, 200),
-      prompt: JSON.stringify(entry),
-      sideEffecting: false,
-      status: "queued",
-    },
-  });
+  const actor = await requestActor();
+  const suppliedIdempotencyKey = b.idempotencyKey ?? req.headers.get("Idempotency-Key");
+  if (!isValidIdempotencyKey(suppliedIdempotencyKey)) {
+    return NextResponse.json({ error: "Idempotency-Key must be 1-200 characters" }, { status: 400 });
+  }
+  const idempotency = idempotencyFields("memory", suppliedIdempotencyKey, actor, entry);
+  const idempotencyKey = idempotency.idempotencyKey;
+  if (idempotency.idempotencyScopeKey) {
+    const existing = await prisma.agentRequest.findFirst({
+      where: {
+        OR: [
+          { idempotencyScopeKey: idempotency.idempotencyScopeKey },
+          ...(idempotencyKey ? [{ idempotencyKey }] : []),
+        ],
+      },
+    });
+    if (existing) {
+      const samePayload = existing.idempotencyPayloadHash === idempotency.idempotencyPayloadHash
+        || existing.idempotencyKey === idempotencyKey;
+      if (!samePayload) return NextResponse.json({ error: "Idempotency-Key was reused with a different payload" }, { status: 409 });
+      return NextResponse.json({ request: existing, entry, idempotent: true });
+    }
+  }
+  let row;
+  try {
+    row = await prisma.agentRequest.create({
+      data: {
+        origin: "web",
+        kind: "memory.write",
+        title: `Memory: ${title}`.slice(0, 200),
+        prompt: JSON.stringify(entry),
+        sideEffecting: true,
+        status: "awaiting_approval",
+        ...idempotency,
+      },
+    });
+  } catch (error) {
+    if (idempotency.idempotencyScopeKey && isPrismaUniqueViolation(error)) {
+      const existing = await prisma.agentRequest.findFirst({ where: { idempotencyScopeKey: idempotency.idempotencyScopeKey } });
+      if (existing) {
+        const samePayload = existing.idempotencyPayloadHash === idempotency.idempotencyPayloadHash
+          || existing.idempotencyKey === idempotencyKey;
+        if (!samePayload) return NextResponse.json({ error: "Idempotency-Key was reused with a different payload" }, { status: 409 });
+        return NextResponse.json({ request: existing, entry, idempotent: true });
+      }
+    }
+    throw error;
+  }
   return NextResponse.json({ request: row, entry });
 }

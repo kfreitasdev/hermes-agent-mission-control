@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { idempotencyFields, isPrismaUniqueViolation, isValidIdempotencyKey, requestActor } from "@/lib/agent-request-errors";
 
 export type CronJob = {
   id: string;
@@ -63,17 +64,65 @@ export async function POST(req: Request) {
   const op = (b.op || "").toString();
   if (!["create", "pause", "resume", "run", "remove", "edit"].includes(op))
     return NextResponse.json({ error: "bad op" }, { status: 400 });
+  if (op === "create" && (!b.schedule || !(b.prompt || b.name || b.script))) {
+    return NextResponse.json({ error: "create requires schedule and prompt, name, or script" }, { status: 400 });
+  }
+  if (op === "create" && b.paused && !(b.pausedReason || b.paused_reason)) {
+    return NextResponse.json({ error: "paused create requires pausedReason" }, { status: 400 });
+  }
+  if (op !== "create" && !(b.id || b.name)) {
+    return NextResponse.json({ error: `${op} requires id or name` }, { status: 400 });
+  }
   const label = op === "create" ? `Schedule: ${b.schedule || "?"} — ${b.prompt || b.name || ""}` : `Cron ${op}: ${b.name || b.id || ""}`;
-  const sideEffecting = op === "create" || op === "edit" || op === "remove";
-  const row = await prisma.agentRequest.create({
-    data: {
-      origin: "web",
-      kind: `cron.${op}`,
-      title: label.slice(0, 200),
-      prompt: JSON.stringify(b),
-      sideEffecting,
-      status: sideEffecting ? "awaiting_approval" : "queued",
-    },
-  });
+  // Every cron mutation, including run/pause/resume, requires approval.
+  const sideEffecting = true;
+  const actor = await requestActor();
+  const suppliedIdempotencyKey = b.idempotencyKey ?? req.headers.get("Idempotency-Key");
+  if (!isValidIdempotencyKey(suppliedIdempotencyKey)) {
+    return NextResponse.json({ error: "Idempotency-Key must be 1-200 characters" }, { status: 400 });
+  }
+  const idempotency = idempotencyFields("crons", suppliedIdempotencyKey, actor, b);
+  const idempotencyKey = idempotency.idempotencyKey;
+  if (idempotency.idempotencyScopeKey) {
+    const existing = await prisma.agentRequest.findFirst({
+      where: {
+        OR: [
+          { idempotencyScopeKey: idempotency.idempotencyScopeKey },
+          ...(idempotencyKey ? [{ idempotencyKey }] : []),
+        ],
+      },
+    });
+    if (existing) {
+      const samePayload = existing.idempotencyPayloadHash === idempotency.idempotencyPayloadHash
+        || existing.idempotencyKey === idempotencyKey;
+      if (!samePayload) return NextResponse.json({ error: "Idempotency-Key was reused with a different payload" }, { status: 409 });
+      return NextResponse.json({ request: existing, idempotent: true });
+    }
+  }
+  let row;
+  try {
+    row = await prisma.agentRequest.create({
+      data: {
+        origin: "web",
+        kind: `cron.${op}`,
+        title: label.slice(0, 200),
+        prompt: JSON.stringify(b),
+        sideEffecting,
+        status: sideEffecting ? "awaiting_approval" : "queued",
+        ...idempotency,
+      },
+    });
+  } catch (error) {
+    if (idempotency.idempotencyScopeKey && isPrismaUniqueViolation(error)) {
+      const existing = await prisma.agentRequest.findFirst({ where: { idempotencyScopeKey: idempotency.idempotencyScopeKey } });
+      if (existing) {
+        const samePayload = existing.idempotencyPayloadHash === idempotency.idempotencyPayloadHash
+          || existing.idempotencyKey === idempotencyKey;
+        if (!samePayload) return NextResponse.json({ error: "Idempotency-Key was reused with a different payload" }, { status: 409 });
+        return NextResponse.json({ request: existing, idempotent: true });
+      }
+    }
+    throw error;
+  }
   return NextResponse.json({ request: row });
 }

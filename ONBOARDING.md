@@ -134,7 +134,22 @@ You should see `hermes-bridge up …` in the logs. Then make it permanent:
   `node /path/to/hermes-bridge/bridge.mjs` with `DATABASE_URL` set, and enable it.
 See `hermes-bridge/README.md` for the exact commands.
 
-### Step 8 — Verify the bridge connected
+### Step 8 — Configure MCP integrations per Profile
+If a Profile must use NotebookLM, configure the MCP server in that Profile. A global
+MCP entry is not automatically inherited by isolated Profiles:
+```sh
+hermes -p glowryia mcp add notebooklm \
+  --command /root/.local/bin/notebooklm-mcp \
+  --connect-timeout 60
+hermes -p glowryia mcp test notebooklm
+notebooklm-auth verify
+npm run audit:notebooklm
+```
+The audit is read-only and must report 13 discovered tools plus valid NotebookLM
+authentication. For notebook creation, approve the request first; the Profile then
+uses `nlm_create_notebook` and `nlm_add_source` rather than opening a browser login.
+
+### Step 9 — Verify the bridge connected
 Ask the operator to open the website's `/hermes` activity feed and confirm a
 **"Bridge connected"** event appears. Once it does, the loop is closed: the website
 can dispatch requests, and you will pick up `queued`/`approved` ones and mirror your

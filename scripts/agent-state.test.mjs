@@ -38,9 +38,32 @@ test("bridge returns a profile to idle and increments completed work once", () =
   assert.equal(state.recentActivity.length, 2);
 });
 
+test("mirror-provided completed count wins over a stale in-memory increment", () => {
+  const state = buildAgentState({
+    profile: "pulse",
+    status: "idle",
+    completed: true,
+    tasksCompleted: 4,
+    existing: { tasksCompleted: 3 },
+  });
+  assert.equal(state.tasksCompleted, 4);
+});
+
+test("lastActive survives an idle mirror without a newer request", () => {
+  const state = buildAgentState({
+    profile: "max",
+    status: "idle",
+    existing: { lastActive: "2026-09-27T17:00:00.000Z" },
+    now: new Date("2026-09-27T18:00:00.000Z"),
+  });
+  assert.equal(state.lastActive, "2026-09-27T17:00:00.000Z");
+});
+
 test("unknown profiles are rejected before persistence", () => {
-  assert.throws(
-    () => buildAgentState({ profile: "not-allowed", status: "working" }),
-    /unknown Hermes Profile/,
-  );
+  for (const profile of ["not-allowed", "toString", "constructor"]) {
+    assert.throws(
+      () => buildAgentState({ profile, status: "idle" }),
+      /unknown Hermes Profile/,
+    );
+  }
 });
