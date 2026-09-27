@@ -24,6 +24,7 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [newTask, setNewTask] = useState("");
   const [showAddTask, setShowAddTask] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchTasks();
@@ -31,11 +32,14 @@ export default function TasksPage() {
 
   async function fetchTasks() {
     try {
-      const res = await fetch("/api/tasks");
-      const data = await res.json();
-      setTasks(data.tasks || []);
+      const res = await fetch("/api/tasks", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível carregar as tarefas.");
+      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+      setError(null);
     } catch (e) {
       console.error("Falha ao buscar tarefas", e);
+      setError(e instanceof Error ? e.message : "Não foi possível carregar as tarefas.");
     } finally {
       setLoading(false);
     }
@@ -44,29 +48,37 @@ export default function TasksPage() {
   async function addTask() {
     if (!newTask.trim()) return;
     try {
-      await fetch("/api/tasks", {
+      setError(null);
+      const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newTask, status: "Not started" }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível salvar a tarefa.");
       setNewTask("");
       setShowAddTask(false);
-      fetchTasks();
+      await fetchTasks();
     } catch (e) {
       console.error("Falha ao adicionar tarefa", e);
+      setError(e instanceof Error ? e.message : "Não foi possível salvar a tarefa.");
     }
   }
 
   async function updateTaskStatus(taskId: string, newStatus: string) {
     try {
-      await fetch("/api/tasks", {
+      setError(null);
+      const res = await fetch("/api/tasks", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: taskId, status: newStatus }),
       });
-      fetchTasks();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível atualizar a tarefa.");
+      await fetchTasks();
     } catch (e) {
       console.error("Falha ao atualizar tarefa", e);
+      setError(e instanceof Error ? e.message : "Não foi possível atualizar a tarefa.");
     }
   }
 
@@ -106,6 +118,12 @@ export default function TasksPage() {
           </div>
           <Button variant="primary" onClick={() => setShowAddTask(true)}>+ Adicionar tarefa</Button>
         </div>
+
+        {error && (
+          <div role="alert" className="mb-6 rounded-[var(--r-md)] border border-red-500/30 bg-red-500/10 px-4 py-3 text-[13px] text-red-200">
+            {error}
+          </div>
+        )}
 
         {showAddTask && (
           <div className="hq-rise elevated mb-8 p-5">
